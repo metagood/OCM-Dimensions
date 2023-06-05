@@ -1,0 +1,16 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><div id="scene"></div><script>
+td='SRC_COMPRESSED_STRING';
+function fflateCallback(){newS=document.createElement('script');
+newS.innerHTML=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map((char)=>char.charCodeAt(0)))))+";fflateCallback2()";
+document.body.appendChild(newS);}
+(async function(){
+response=await fetch(`/content/2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0`);
+hl=await response.text();
+hlL=hl.split("\n");
+fflateS=hlL[28];
+d3S=hlL[32];
+ffCS="fflateCallback();";
+newS=document.createElement('script');
+newS.innerHTML=[fflateS,d3S,ffCS].join(";\n");
+document.body.appendChild(newS);})();
+</script></body></html>

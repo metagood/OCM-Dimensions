@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>
+single page compression pipeline
+</title>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.0/umd/index.js"></script>
+
+<script>
+function main() {
+  const massiveFile = document.getElementById("userInput1").value
+  function stringToArray(bufferString) {
+    let uint8Array = new TextEncoder("utf-8").encode(bufferString);
+    return uint8Array;
+  }
+  const gzipped = fflate.gzipSync(stringToArray(massiveFile), {
+    // GZIP-specific: the filename to use when decompressed
+    filename: 'aMassiveFile.txt',
+    // GZIP-specific: the modification time. Can be a Date, date string,
+    // or Unix timestamp
+    mtime: '9/1/16 2:00 PM'
+  });
+  console.log(gzipped);
+  const uint8ToBase64 = (arr) =>
+    btoa(
+        Array(arr.length)
+            .fill('')
+            .map((_, i) => String.fromCharCode(arr[i]))
+            .join('')
+    );
+  var b64encoded = uint8ToBase64(gzipped);
+  var pageStructureb64 = "PGh0bWw+PGhlYWQ+PG1ldGEgY2hhcnNldD0idXRmLTgiPjxzdHlsZT5ib2R5IHttYXJnaW46IDA7fTwvc3R5bGU+PC9oZWFkPjxib2R5PjxkaXYgaWQ9InNjZW5lIj48L2Rpdj48c2NyaXB0PgpkMz0nU1JDX0NPTVBSRVNTRURfU1RSSU5HJzsKZnVuY3Rpb24gZmZsYXRlQ2FsbGJhY2soKXsKdHQ9ZmZsYXRlLnN0ckZyb21VOChmZmxhdGUuZ3VuemlwU3luYyhuZXcgVWludDhBcnJheShBcnJheS5mcm9tKGF0b2IoZDMpKS5tYXAoKGNoYXIpPT5jaGFyLmNoYXJDb2RlQXQoMCkpKSkpOwpkb2N1bWVudC5ib2R5LmlubmVySFRNTD10dDsKbWF0Y2hlcz10dC5tYXRjaEFsbCgvPHNjcmlwdFtePl0qPiguKj8pPFwvc2NyaXB0Pi9pc2cpOwpmb3IobWF0Y2ggb2YgbWF0Y2hlcyl7CnNjcmlwdD1kb2N1bWVudC5jcmVhdGVFbGVtZW50KCdzY3JpcHQnKTsKc2NyaXB0LmlubmVySFRNTD1tYXRjaFsxXTsKZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChzY3JpcHQpO30Kd2luZG93Lm9ubG9hZCgpO30KKGFzeW5jIGZ1bmN0aW9uKCl7cmVzcG9uc2U9YXdhaXQgZmV0Y2goYC9jb250ZW50LzJkYmRmOWViYmVjNmJlNzkzZmQxNmFlOWI3OTdjN2NmOTY4YWIyNDI3MTY2YWFmMzkwYjkwYjcxNzc4MjY2YWJpMGApOwpodG1sPWF3YWl0IHJlc3BvbnNlLnRleHQoKTsKaHRtbExpbmVzPWh0bWwuc3BsaXQoIlxuIik7CmZmbGF0ZVNjcmlwdD1odG1sTGluZXNbMjhdOwpmZmxhdGVDYWxsYmFja1NjcmlwdD0iZmZsYXRlQ2FsbGJhY2soKTsiOwpuZXdTY3JpcHQ9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnc2NyaXB0Jyk7Cm5ld1NjcmlwdC5pbm5lckhUTUw9W2ZmbGF0ZVNjcmlwdCxmZmxhdGVDYWxsYmFja1NjcmlwdF0uam9pbigiO1xuIik7CmRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQobmV3U2NyaXB0KTt9KSgpOwo8L3NjcmlwdD48L2JvZHk+PC9odG1sPgo=";
+  var pageStructure = atob(pageStructureb64);
+  pageStructure = pageStructure.replace('SRC_COMPRESSED_STRING', b64encoded);
+var escapeTA = document.createElement('textarea');
+function escapeHTML(html) {
+    escapeTA.textContent = html;
+    return escapeTA.innerHTML;
+}
+pageStructure = escapeHTML(pageStructure);
+console.log(pageStructure);
+
+document.getElementById("output1").innerHTML = pageStructure;
+}
+</script>
+<textarea id="userInput1" name="userInput1">
+It was a dark and stormy night...
+</textarea>
+<div id="output1">
+</div>
+<button onclick=main()>
+Create compressed webpage
+</button>
+</body>
+</html>

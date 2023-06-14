@@ -1,13 +1,7 @@
-# Using Dimensions to compress inscriptions
+### Compress HTML
 
-## How to build a compressed html to be inscribed
-
-1. Put the .html file to be compressed in the /input directory.
-
-2. Run make:
-
-> `make clean && make`
-
-3. The compressed file to inscribe is `index.html`
-
-4. (optional) To check if index.html file works locally, open index.html and search and replace "fetch(`/content/" with "fetch(`https://ordinals.com/content/"
+1. Navigate to the `compress-html` directory with `cd compress-html`.
+2. Place your `.html` file in the `input` directory.
+3. Run `make clean && make` in the terminal.
+4. Your compressed file will be `index.html`.
+5. To check if `index.html` file works locally, open `index.html` and search and replace "fetch(/content/" with "fetch(https://ordinals.com/content/".

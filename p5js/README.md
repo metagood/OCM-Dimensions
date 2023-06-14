@@ -1,11 +1,7 @@
-# How to use Dimensions to use p5.js
+### Compress p5.js
 
-1. Put the js code in compressed-inputs/02_main.min.js 
-
-2. Run make:
-
-> `make clean && make`
-
-3. The final file to upload as an inscription is index.html
-
-4. (optional) To check if index.html file works locally, open index.html and search and replace "fetch(`/content/" with "fetch(`https://ordinals.com/content/" (2 places)
+1. Navigate to the `p5js` directory with `cd ../p5js`.
+2. Put your js code in `input/02_main.js`.
+3. Run `make clean && make` in the terminal.
+4. Your final file will be `index.html`.
+5. To check if `index.html` file works locally, open `index.html` and search and replace "fetch(/content/" with "fetch(https://ordinals.com/content/" (2 places).

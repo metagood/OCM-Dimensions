@@ -2,7 +2,7 @@
 
 Welcome to OCM Dimensions! 
 
-OCM Dimensions is a high-resolution, 3D animated and generative ordinal collection, making it a pioneer among collections on Bitcoin since its inscription in February 2023. Dimensions innovates in the following areas:
+[OCM Dimensions](https://onchainmonkey.com/ocm-dimensions) is a high-resolution, 3D animated and generative ordinal collection, making it a pioneer among collections on Bitcoin since its inscription in February 2023. Dimensions innovates in the following areas:
 
 1. Recursion and composability
 2. Code libraries - compression, Three.js, p5.js - the main subject of this GitHub repo, using these libraries, anyone can

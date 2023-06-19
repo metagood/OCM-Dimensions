@@ -1,4 +1,4 @@
-### Compress p5.js
+### Use p5.js
 
 1. Navigate to the `p5js` directory with `cd ../p5js`.
 2. Put your js code in `input/02_main.js`.

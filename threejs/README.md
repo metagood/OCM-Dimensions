@@ -1,4 +1,4 @@
-### Compress Three.js
+### Use Three.js
 
 1. Navigate to the `threejs` directory with `cd ../threejs`.
 2. Minify your `02_main.js` file and save it as `compressed-inputs/02_main.min.js`.

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Ordinals</title>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.0/umd/index.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+
+	<script>
+		// This is the collection of libraries inscribed on bitcon. If the output needs special handling, add a callback func for it
+		// if no callback we assume it's base64 encoded & gzipped
+		const inscribedLibraries = {
+			fflate: {
+				name: 'fflate',
+				ordinalID: 'c7a70ee5c36b32541cae16c17cc116e7c2f441638b50aff584eaf829df383210i0',
+				callback: function(response) {
+					// fflate is not encoded so return as is
+					return response;
+				}
+			},
+			p5: {
+				name: 'p5.js',
+				ordinalID: '255ce0c5a0d8aca39510da72e604ef8837519028827ba7b7f723b7489f3ec3a4i0',
+			},
+			threejs: {
+				name: 'Three.js',
+				ordinalID: '2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0',
+				callback: function(response) {
+					r=response.split("\n")[32]; // pull from line 33
+					r = r.substr(10, r.length-12); // extract the string
+					decoded = unGzip64(r);
+					return decoded.replace('window.onload=()=>{init()}', '');
+				}
+			},
+		}
+	</script>
+
+	<style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+		main {
+			max-width: 1000px;
+			margin: 0 auto;;
+		}
+
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+		.section.tabs {
+			border: 1px solid #028cbb;
+			border-radius: 0 8px 8px 8px;
+		}
+
+        #toggleButtons {
+
+        }
+
+        .toggleButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #b3daff;
+            color: white;
+            border: none;
+    		border-radius: 5px 5px 0 0;
+        }
+
+        .toggleButton:hover {
+            background-color: #99c2ff;
+        }
+
+        .toggleButton.active {
+            background-color: #008CBA;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        #textCompress {
+            display: block;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        button, a.button {
+			display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button, a.button:hover {
+            background-color: #007ab3;
+        }
+
+        textarea, input[type=file] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+		textarea {
+			font-family: 'Courier New', Courier, monospace;
+		}
+    </style>
+
+</head>
+<body>
+
+	<main>
+
+		<h1>Compress your code and use on-chain libraries</h1>
+
+		<div class="section">
+			<h2>Select Libraries</h2>
+
+			<form id="url-form"></form>
+
+			<script>
+
+				const form = document.getElementById("url-form");
+
+				// Populate the form with checkboxes based on libs
+				Object.keys(inscribedLibraries).forEach(key => {
+					const label = document.createElement("label");
+					const checkbox = document.createElement("input");
+					checkbox.type = "checkbox";
+					checkbox.name = "urls";
+					checkbox.value = key;
+					// include fflate always
+					if(key == 'fflate') {
+						checkbox.checked='checked';
+						checkbox.disabled='disabled';
+					}
+					label.appendChild(checkbox);
+					label.appendChild(document.createTextNode(` ${key}`));
+					form.appendChild(label);
+					form.appendChild(document.createElement("br"));
+				});
+
+				function serializeObject(obj) {
+					if (typeof obj === 'function') {
+						return obj.toString();
+					}
+
+					if (typeof obj !== 'object' || obj === null) {
+						return JSON.stringify(obj);
+					}
+
+					let serialized = '{';
+					for (const key in obj) {
+						serialized += `"${key}": ${serializeObject(obj[key])},`;
+					}
+
+					// Removing the trailing comma and closing the object
+					return serialized.endsWith(',') ? serialized.slice(0, -1) + '}' : serialized + '}';
+				}
+
+
+			</script>
+
+			
+		</div>
+
+		<div id="toggleButtons">
+			<button class="toggleButton active" id="textCompressButton" onclick="showDiv('textCompress')">Paste Your Code</button>
+			<button class="toggleButton" id="fileCompressButton" onclick="showDiv('fileCompress')">Upload Your Files</button>
+		</div>
+		<div class="section tabs">
+	
+			<div id="textCompress" class="panel">
+				<h2>Compress Text</h2>
+				<textarea id="inputText" rows="10" cols="50"></textarea><br>
+				<button onclick="compressText()">Compress</button>
+			</div>
+	
+			<div id="fileCompress" class="panel">
+				<h2>Compress Files</h2>
+				<input type="file" id="fileInput" multiple><br>
+				<button onclick="compressFiles()">Compress</button>
+			</div>
+		</div>
+	
+		<script>
+			function showDiv(id) {
+				// Hide sections
+				document.getElementById('textCompress').style.display = 'none';
+				document.getElementById('fileCompress').style.display = 'none';
+	
+				// Remove active class from buttons
+				document.getElementById('textCompressButton').classList.remove('active');
+				document.getElementById('fileCompressButton').classList.remove('active');
+	
+				// Show selected section
+				document.getElementById(id).style.display = 'block';
+	
+				// Add active class to selected button
+				if (id === 'textCompress') {
+					document.getElementById('textCompressButton').classList.add('active');
+				} else if (id === 'fileCompress') {
+					document.getElementById('fileCompressButton').classList.add('active');
+				}
+			}
+		</script>
+
+
+		<div class="section" id="downloadLink" style="display:none; margin: 30px 0;">
+			<a class="button">Download Your Files</a>
+		</div>
+
+		<script>
+
+			async function compressFiles() {
+				const fileInput = document.getElementById('fileInput');
+				const files = fileInput.files;
+				let concatenatedContent = [];
+				let filesProcessed = 0;
+
+				if (files.length > 0) {
+					Array.from(files).forEach(file => {
+						const reader = new FileReader();
+						reader.onload = async function(event) {
+							concatenatedContent.push(event.target.result);
+							filesProcessed++;
+
+							if (filesProcessed == files.length) {
+								const inputText = concatenatedContent.join("\n");
+								const buf = fflate.strToU8(inputText);
+								const compressed = fflate.gzipSync(buf, { level: 6, mem: 8 });
+								const base64 = btoa(String.fromCharCode.apply(null, compressed));
+							
+								let output = await compileHTML(base64);
+								
+								setDownloadLink(output);
+
+							}
+						};
+						reader.readAsText(file);
+					});
+				}
+			}
+
+			async function compressText() {
+				const inputText = document.getElementById("inputText").value;
+				const buf = fflate.strToU8(inputText);
+				const compressed = fflate.gzipSync(buf, { level: 6, mem: 8 });
+				const base64 = btoa(String.fromCharCode.apply(null, compressed));
+				
+				let output = await compileHTML(base64);
+				
+				setDownloadLink(output);
+			}
+
+			function setDownloadLink(text) {
+
+				let t = document.getElementById("output").value;
+
+				// Create a Blob from the modified text
+				let blob = new Blob([t], { type: 'text/html' });
+
+				// Create a link to download the Blob as an HTML file
+				let a = document.querySelector("#downloadLink a")
+				a.href = URL.createObjectURL(blob);
+				a.download = 'compressed.html';
+
+				// Flash the download link to let them know it's ready
+				document.querySelector('#output-section').style.display='none';
+				document.querySelector('#downloadLink').style.display='none';
+				setTimeout(function() {
+				document.querySelector('#output-section').style.display='block';
+					document.querySelector("#downloadLink").style.display = 'block';
+				}, 100);
+				
+			}
+
+			async function compileHTML(userCode) {
+
+				const checkboxes = document.querySelectorAll('input[name="urls"]:checked');
+
+				// make new object of selected libs
+				const selectedLibsArray = Array.from(checkboxes).map(checkbox => {
+					return checkbox.value
+				});
+				let selectedLibs = selectedLibsArray.reduce((acc, a) => {
+					acc[a]=inscribedLibraries[a];
+					return acc;
+				}, {});
+
+				// Fetch the template file
+				let response = await fetch('template.html');
+				let template = await response.text();
+
+				// Compile the template
+				let compiledTemplate = Handlebars.compile(template);
+
+				// Define the data to replace in the template
+				let obj = serializeObject(selectedLibs);
+
+				console.log('serializeObject(selectedLibs)', obj);
+
+				let data = { 
+					userCode: userCode,
+					libs: obj
+				};
+
+				// Get the final HTML by passing the data to the compiled template
+				let finalHtml = compiledTemplate(data);
+
+
+				document.getElementById("output").innerHTML = finalHtml;
+
+				return finalHtml;
+
+			}
+
+		</script>
+
+
+	<br>
+	<br>
+	<br>
+	<div class="section" id="output-section" style="display: none;">
+		Output:
+		<br>
+		<textarea id="output" rows="20" cols="50"></textarea>
+	</div>
+	<br>
+	<br>
+	<br>
+
+
+</main>
+
+
+
+</body>
+</html>

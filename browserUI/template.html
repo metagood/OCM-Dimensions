@@ -1,0 +1,99 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 0;
+        }
+        main {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            align-items: center;
+            height: 100%;
+        }
+        main canvas {
+            width: auto !important;
+            height: auto !important;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene"></div>
+    <script>
+
+		const isTesting = false; // set to 'true' to prepend 'http://ordinals.com' to your fetch calls so you can test locally
+
+		if(isTesting) {
+			alert('You are in test mode! Remember to set isTesting = false; before inscribing');
+		}
+
+		// This is your compressed code
+        const userCode = '{{userCode}}';
+
+		// User's selected libraries
+		const libs = {{libs}}
+
+		async function getLib(libID) {
+			if(libs[libID] == undefined) {
+				console.error('lib not found');
+				return;
+			}
+			let lib = await getFromOrdinal(libs[libID].ordinalID, isTesting);
+			let decodedLib = (libs[libID].callback == undefined)? unGzip64(lib) : libs[libID].callback(lib);
+			return decodedLib;
+		}
+
+		// decode from base64 and unzip
+		function unGzip64(encoded) {
+			return fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(encoded)).map((char) => char.charCodeAt(0)))));
+		}
+		
+		// returns base64 encoded string of gzipped file
+		async function getFromOrdinal(ordinalID, prependOrdCom = false) {
+			let prepend = (prependOrdCom)?'http://ordinals.com':'';
+			let resp = await fetch(`${prepend}/content/${ordinalID}`);
+			let encoded = await resp.text();
+			return encoded;
+		}
+
+		function addScriptToPage(str) {
+			// add script to page
+            let newS = document.createElement('script');
+            newS.innerHTML = str;
+            document.body.appendChild(newS);
+		}
+
+        (async function() {
+
+            fflateS = await getLib('fflate');
+            addScriptToPage(fflateS);
+
+			// Create an array of fetch promises
+			const fetchPromises = Object.keys(libs).map(key => {
+				return getLib(key);
+			});
+
+			// Use Promise.all to wait for all fetches to complete
+			Promise.all(fetchPromises)
+			.then(results => {
+				
+				results.forEach((item) => {
+					addScriptToPage(item);
+				})
+
+				// Finally run user's code
+				addScriptToPage(unGzip64(userCode));
+
+			})
+			.catch(error => {
+				// Handle errors here
+				console.error('There was a problem with the fetch operation:', error);
+			});
+
+        })();
+    </script>
+</body>
+</html>

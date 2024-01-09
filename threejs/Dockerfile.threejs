@@ -1,0 +1,10 @@
+## and image to run npm build and exec sed -i \"s/\/content\//https:\/\/ordinals.com\/content\//g\" ./dist/index.html
+FROM node:18 as build
+WORKDIR /app
+COPY . /app
+RUN apt-get install -y sed
+RUN npm install -g npm@9.8.0
+RUN npm install
+RUN npm run build
+RUN sed -i "s/\/content\//https:\/\/ordinals.com\/content\//g" ./index.html
+CMD ["echo", "Build completed"]

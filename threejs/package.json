@@ -1,0 +1,14 @@
+{
+  "name": "ocm-dimensions-threejs",
+  "private": false,
+  "version": "0.0.1.001",
+  "type": "commonjs",
+  "scripts": {
+    "build": "minify 02_main.js > compressed-inputs/02_main.min.js",
+    "postbuild": "make clean && make"
+  },
+  "dependencies": {
+    "minify": "^10.2.0",
+    "npx": "^10.2.2"
+  }
+}

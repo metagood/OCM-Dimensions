@@ -1,0 +1,7 @@
+# COMMONS
+node_modules/
+
+# BUILD results for Three.js process
+threejs/package-lock.json
+threejs/src-compressed-string.base64
+threejs/index.html

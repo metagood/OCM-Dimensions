@@ -22,11 +22,23 @@ Read more [about OCM Dimensions.](https://onchainmonkey.medium.com/ocm-dimension
 
 This GitHub repository for OCM Dimensions is a suite of tools aimed at helping creators save space on the Bitcoin blockchain by compressing their HTML, and empower creators with the powerful libraries of Three.js, and p5.js which we inscribed on Bitcoin. By leveraging the Dimensions art, we're making it possible to have more power inscribing on Bitcoin, with no changes needed to the Ordinal protocol. 
 
-This toolset comprises three key utilities: 
+This toolset comprises several utilities:
 
 1. Compress HTML
 2. Use Three.js
 3. Use p5.js
+4. Browser UI
+
+## Repository Structure
+
+- **compress-html/** – Compress a single HTML file using gzip and base64.
+- **threejs/** – Helper scripts for Three.js projects.
+- **p5js/** – Helper scripts for p5.js projects.
+- **browserUI/** – In-browser interface to bundle code with selected libraries.
+- **compress-html/examples/** – Samples demonstrating larger pieces of content.
+- **compress-html/onepage/** – Example output from the browser UI.
+
+Each directory includes a README with specific build instructions.
 
 Let's walk through how to use each of them.
 

@@ -2,7 +2,13 @@ const fs = require('fs');
 
 const args = process.argv.slice(2);
 const baseUrlIndex = args.indexOf('--base-url');
-const baseUrlInput = baseUrlIndex >= 0 ? args[baseUrlIndex + 1] : '';
+let baseUrlInput = '';
+if (baseUrlIndex >= 0) {
+  const nextArg = args[baseUrlIndex + 1];
+  if (nextArg && !nextArg.startsWith('--')) {
+    baseUrlInput = nextArg;
+  }
+}
 const baseUrl = baseUrlInput ? baseUrlInput.replace(/\/$/, '') : '';
 
 const page_structure = fs.readFileSync('page-structure.html', {encoding:'utf8'});

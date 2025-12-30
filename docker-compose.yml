@@ -1,0 +1,17 @@
+version: '3.9'
+name: ocm
+services:
+
+  dimensions-threejs:
+    container_name: dimensions-threejs
+    build:
+      context: ./threejs/
+      dockerfile: ./Dockerfile.threejs
+  
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./threejs:/usr/share/nginx/html
+    ports:
+      - 8896:80

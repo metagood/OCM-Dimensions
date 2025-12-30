@@ -22,6 +22,16 @@ Read more [about OCM Dimensions.](https://onchainmonkey.medium.com/ocm-dimension
 
 This GitHub repository for OCM Dimensions is a suite of tools aimed at helping creators save space on the Bitcoin blockchain by compressing their HTML, and empower creators with the powerful libraries of Three.js, and p5.js which we inscribed on Bitcoin. By leveraging the Dimensions art, we're making it possible to have more power inscribing on Bitcoin, with no changes needed to the Ordinal protocol.
 
+## Background: Ordinals, art on Bitcoin, and why these tools exist
+
+**Ordinals** are a way to associate data with individual satoshis. When you "inscribe" HTML, JavaScript, or media, that content becomes part of Bitcoin's history and can be rendered directly by Ordinals-aware viewers. OCM Dimensions uses **recursion** (fetching other inscriptions at render time) so creators can reference shared on-chain libraries instead of uploading duplicate code.
+
+**Art on Bitcoin** pushes creators to work within tight file-size limits. Generative art thrives in this environment because small, parameterized code can output infinite variety. The tooling in this repo focuses on keeping your inscriptions tiny while still enabling rich visuals.
+
+**Why Three.js and p5.js?** Three.js unlocks real-time 3D graphics and animation in the browser, while p5.js is a creative coding toolkit popular for generative visuals. OCM Dimensions inscribed compact versions of these libraries so you can pull them on-chain when your work renders.
+
+**OCM Dimensions and OnChainMonkey.** OnChainMonkey (OCM) is a leading Bitcoin-native art project. OCM Dimensions extends that lineage by demonstrating what's possible with recursive on-chain libraries, compressing complex 3D generative work into exceptionally small inscriptions.
+
 ## On-chain library inscriptions
 
 These inscriptions are the foundation of the workflow in this repo. You use recursion (fetching on-chain content from within your inscription) to load the libraries at render time.
@@ -81,8 +91,8 @@ For guided walkthroughs, start in `tutorials/README.md`.
 1. Navigate to the `tools/compress-html` directory with `cd tools/compress-html`.
 2. Place your `.html` file in the `input` directory.
 3. Run `make clean && make` in the terminal.
-4. Your compressed file will be `index.html`.
-5. To check if `index.html` file works locally, open `index.html` and search and replace "fetch(/content/" with "fetch(https://ordinals.com/content/".
+4. Your compressed file will be `index.html` (for inscribing) and `index.local.html` (for local preview).
+5. Open `index.local.html` in a browser to test locally with the Ordinals content URLs already in place.
 
 ### Use Three.js
 
@@ -91,20 +101,20 @@ For guided walkthroughs, start in `tutorials/README.md`.
     - If you have `minify` installed, run `minify 02_main.js > compressed-inputs/02_main.min.js` in the terminal.
     - If you don't have `minify`, just put the js code in `compressed-inputs/02_main.min.js` directly.
 3. Run `make clean && make` in the terminal.
-4. Your final file will be `index.html`.
-5. To check if `index.html` file works locally, open `index.html` and search and replace "fetch(/content/" with "fetch(https://ordinals.com/content/".
+4. Your final files will be `index.html` (for inscribing) and `index.local.html` (for local preview).
+5. Open `index.local.html` in a browser to test locally with the Ordinals content URLs already in place.
 
 ### Use p5.js
 
 1. Navigate to the `tools/p5js` directory with `cd tools/p5js`.
 2. Put your js code in `input/02_main.js`.
 3. Run `make clean && make` in the terminal.
-4. Your final file will be `index.html`.
-5. To check if `index.html` file works locally, open `index.html` and search and replace "fetch(/content/" with "fetch(https://ordinals.com/content/" (2 places).
+4. Your final files will be `index.html` (for inscribing) and `index.local.html` (for local preview).
+5. Open `index.local.html` in a browser to test locally with the Ordinals content URLs already in place.
 
 ## Local testing tip
 
-When testing locally, replace `fetch(/content/...)` with `fetch(https://ordinals.com/content/...)` so the browser can access the on-chain library content without an Ord server running locally.
+The `make` targets now generate `index.local.html` for each workflow with `https://ordinals.com` prefilled for the content fetches. Use it for local preview, and inscribe `index.html` as-is.
 
 ## Tests
 

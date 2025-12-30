@@ -20,17 +20,14 @@ cd tools/threejs
 make clean && make
 ```
 
-This generates `tools/threejs/index.html`, which is the file you will inscribe.
+This generates `tools/threejs/index.html`, which is the file you will inscribe,
+plus `tools/threejs/index.local.html` for local previews.
 
 ## 3) Test locally
 
-For local preview, open `tools/threejs/index.html` and replace:
-
-```
-fetch(/content/...) → fetch(https://ordinals.com/content/...)
-```
-
-This lets your browser download the on-chain libraries without running an Ord server.
+For local preview, open `tools/threejs/index.local.html`. The local file already
+targets `https://ordinals.com/content/...`, so your browser can download the on-chain
+libraries without running an Ord server.
 
 ## How recursion works here
 

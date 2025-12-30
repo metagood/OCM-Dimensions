@@ -14,17 +14,14 @@ cd tools/p5js
 make clean && make
 ```
 
-This generates `tools/p5js/index.html`, which is the file you will inscribe.
+This generates `tools/p5js/index.html`, which is the file you will inscribe,
+plus `tools/p5js/index.local.html` for local previews.
 
 ## 3) Test locally
 
-For local preview, open `tools/p5js/index.html` and replace:
-
-```
-fetch(/content/...) → fetch(https://ordinals.com/content/...)
-```
-
-There are two `fetch` calls in the template: one for the OCM Dimensions inscription and one for the p5.js library.
+For local preview, open `tools/p5js/index.local.html`. The local file already targets
+`https://ordinals.com/content/...` for both the OCM Dimensions inscription and the
+p5.js library.
 
 ## How recursion works here
 

@@ -5,13 +5,13 @@ services:
   dimensions-threejs:
     container_name: dimensions-threejs
     build:
-      context: ./threejs/
+      context: ./tools/threejs/
       dockerfile: ./Dockerfile.threejs
   
   nginx:
     container_name: nginx
     image: nginx:latest
     volumes:
-      - ./threejs:/usr/share/nginx/html
+      - ./tools/threejs:/usr/share/nginx/html
     ports:
       - 8896:80

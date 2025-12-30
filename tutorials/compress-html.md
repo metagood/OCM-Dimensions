@@ -15,16 +15,13 @@ make clean && make
 ```
 
 This generates `tools/compress-html/index.html`, which is the file you will inscribe.
+It also generates `tools/compress-html/index.local.html` for local previews.
 
 ## 3) Test locally
 
-Open `tools/compress-html/index.html` and replace:
-
-```
-fetch(/content/...) → fetch(https://ordinals.com/content/...)
-```
-
-That change lets the browser fetch the on-chain `fflate` script without an Ord server.
+Open `tools/compress-html/index.local.html` to preview locally. The `index.local.html`
+file already points to `https://ordinals.com/content/...` so the browser can fetch
+the on-chain `fflate` script without running an Ord server.
 
 ## How recursion works here
 

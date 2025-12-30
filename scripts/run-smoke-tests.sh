@@ -7,6 +7,10 @@ run_make() {
   local dir="$1"
   echo "==> Building ${dir}"
   (cd "${repo_root}/${dir}" && make clean && make)
+  if [ ! -f "${repo_root}/${dir}/index.html" ]; then
+    echo "ERROR: ${dir}/index.html not created"
+    exit 1
+  fi
 }
 
 run_make "tools/compress-html"

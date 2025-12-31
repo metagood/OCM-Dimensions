@@ -28,7 +28,7 @@
 				ordinalID: '2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0',
 				callback: function(response) {
 					let line = response.split("\n")[32]; // pull from line 33
-					line = line.substr(10, line.length - 12); // extract the string
+					line = line.substring(10, line.length - 2); // extract the string using non-deprecated method
 					const decoded = unGzip64(line);
 					return decoded.replace('window.onload=()=>{init()}', '');
 				}

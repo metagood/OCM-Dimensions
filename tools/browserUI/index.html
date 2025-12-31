@@ -27,9 +27,9 @@
 				name: 'Three.js',
 				ordinalID: '2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0',
 				callback: function(response) {
-					r=response.split("\n")[32]; // pull from line 33
-					r = r.substr(10, r.length-12); // extract the string
-					decoded = unGzip64(r);
+					let line = response.split("\n")[32]; // pull from line 33
+					line = line.substring(10, line.length - 2); // extract the string using non-deprecated method
+					const decoded = unGzip64(line);
 					return decoded.replace('window.onload=()=>{init()}', '');
 				}
 			},
@@ -155,9 +155,9 @@
 					checkbox.name = "urls";
 					checkbox.value = key;
 					// include fflate always
-					if(key == 'fflate') {
-						checkbox.checked='checked';
-						checkbox.disabled='disabled';
+					if (key === 'fflate') {
+						checkbox.checked = true;
+						checkbox.disabled = true;
 					}
 					label.appendChild(checkbox);
 					label.appendChild(document.createTextNode(` ${key}`));

@@ -5,9 +5,9 @@ Welcome to OCM Dimensions!
 [OCM Dimensions](https://onchainmonkey.com/ocm-dimensions) is a high-resolution, 3D animated and generative ordinal collection, making it a pioneer among collections on Bitcoin since its inscription in February 2023. Dimensions innovates in the following areas:
 
 1. Recursion and composability
-2. Code libraries - compression, Three.js, p5.js - the main subject of this GitHub repo, using these libraries, anyone can
-   create art on Bitcoin. It's completely open, decentralized, and the art renders automatically on all Ord explorers from
-   using the on-chain libraries.
+2. Code libraries - compression, Three.js, p5.js - the main subject of this GitHub repo. Using these libraries, anyone can
+   create art on Bitcoin. It's completely open, decentralized, and the art renders automatically on all Ordinals explorers
+   by using the on-chain libraries.
 3. Generative inscriptions
 4. File size - OCM Dimensions does all this in less than 500 bytes per inscription
 5. Provenance and parent-child
@@ -21,6 +21,18 @@ Welcome to OCM Dimensions!
 Read more [about OCM Dimensions.](https://onchainmonkey.medium.com/ocm-dimensions-unveiling-the-many-dimensions-of-bitcoin-ordinals-c850688db68e)
 
 This GitHub repository for OCM Dimensions is a suite of tools aimed at helping creators save space on the Bitcoin blockchain by compressing their HTML, and empower creators with the powerful libraries of Three.js, and p5.js which we inscribed on Bitcoin. By leveraging the Dimensions art, we're making it possible to have more power inscribing on Bitcoin, with no changes needed to the Ordinal protocol.
+
+## Why Dimensions matters: art, recursion, and a growing forest
+
+**Art on Bitcoin** matters because it turns creativity into permanent, globally verifiable culture. Bitcoin is a durable, censorship-resistant media substrate; inscribing art gives it provenance baked into the chain and resilience that outlasts platforms. The tight byte limits push artists toward elegant systems: compact code, generative logic, and smart reuse.
+
+**Ordinals protocol context.** Ordinals associate data with individual satoshis, making inscriptions first-class, on-chain artifacts that can be rendered by Ordinals-aware viewers. OCM was influential in shaping early protocol standards and best practices around recursion and parent-child provenance, helping define how inscriptions can reference one another and preserve lineage on Bitcoin.
+
+**Recursion** is the superpower that makes this possible at scale. Dimensions shows how a single inscription can load other inscriptions at render time, referencing shared libraries, assets, or even other artworks. This makes composability real: creators build once, reuse everywhere, and stay inside strict size limits. Recursion turns Bitcoin into a modular art platform, not just a storage layer. OCM Dimensions is the **most influential art on Recursion**, and the first to show how recursion can be used with shared code libraries to create on-chain art at scale.
+
+**Firsts that changed the medium.** OCM Dimensions was first to inscribe **Three.js** and **p5.js** on Bitcoin and to pair them with **fflate** compression for real-time, generative art on-chain. Those libraries became the backbone for creators who want powerful visuals in tiny inscriptions.
+
+**Dimensions as a root** was always the concept. It intentionally included on-chain libraries for art so that Dimensions could be the root from which a forest of Bitcoin-native creations could grow. Two years later, that vision is real: those libraries now power **tens of thousands of works on Bitcoin**, and they are the **most widely used shared libraries by creators on Bitcoin**, each inheriting the same compact, on-chain, composable DNA.
 
 ## Background: Ordinals, art on Bitcoin, and why these tools exist
 

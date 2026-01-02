@@ -28,6 +28,6 @@ function ocmCallback() {
     renderer.render(scene, camera);
   }
 
-  animate();
   document.querySelector('#scene').appendChild(renderer.domElement);
+  animate();
 }

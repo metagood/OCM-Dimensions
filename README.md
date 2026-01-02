@@ -249,4 +249,3 @@ By embracing Bitcoin’s constraints, it reveals new creative possibilities—wh
 
 - https://onchainmonkey.com/collection/ocm-dimensions
 - https://bitcoinmagazine.com/technical/the-rise-of-ordinals-and-nfts-on-the-medium-of-bitcoin
-

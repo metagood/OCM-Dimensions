@@ -3,7 +3,7 @@
 ![Bitcoin](https://img.shields.io/badge/Bitcoin-Ordinals-orange)
 ![Status](https://img.shields.io/badge/status-live-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![OnChain](https://img.shields.io/badge/on-chain-100%25-brightgreen)
+![OnChain](https://img.shields.io/badge/on--chain-100%25-brightgreen)
 
 > **OCM Dimensions** is a landmark Bitcoin Ordinals project: high-resolution, interactive 3D generative art rendered entirely from on-chain code.
 > Launched in February 2023 by the OnChainMonkey team, it proved—early and definitively—that Bitcoin can support sophisticated, permanent digital art without off-chain dependencies.

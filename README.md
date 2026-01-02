@@ -78,7 +78,7 @@ OCM Dimensions demonstrated that **complex, interactive, high‑resolution art**
 
 Many techniques now considered standard in advanced Ordinals development—recursive calls, shared libraries, parent–child provenance—were first demonstrated publicly at scale in OCM Dimensions.
 
-Part of the art of Dimensions is the concept of being a seed in a growing network of art on Bitcoin. Each new artwork created that is enabled by Dimensions is a new branch in the growing on-chain "tree" of networked art. Now, after two years, the tree has grown into a forrest of art works by numerous artists and thousands of works (many still waiting to be discovered!). OCM Dimensions is one of the most linked inscriptions on Bitcoin.
+Part of the art of Dimensions is the concept of being a seed in a growing network of art on Bitcoin. Each new artwork created that is enabled by Dimensions is a new branch in the growing on-chain "tree" of networked art. Now, after two years, the tree has grown into a forest of art works by numerous artists and thousands of works (many still waiting to be discovered!). OCM Dimensions is one of the most linked inscriptions on Bitcoin.
 
 ---
 

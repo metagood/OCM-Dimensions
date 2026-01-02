@@ -3,20 +3,20 @@
 ![Bitcoin](https://img.shields.io/badge/Bitcoin-Ordinals-orange)
 ![Status](https://img.shields.io/badge/status-live-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![OnChain](https://img.shields.io/badge/on--chain-100%25-brightgreen)
+![OnChain](https://img.shields.io/badge/on-chain-100%25-brightgreen)
 
-> **OCM Dimensions** is a landmark Bitcoin Ordinals project: high‑resolution, interactive 3D generative art rendered entirely from on‑chain code.
-> Launched in February 2023 by the OnChainMonkey team, it proved—early and definitively—that Bitcoin can support sophisticated, permanent digital art without off‑chain dependencies.
+> **OCM Dimensions** is a landmark Bitcoin Ordinals project: high-resolution, interactive 3D generative art rendered entirely from on-chain code.
+> Launched in February 2023 by the OnChainMonkey team, it proved—early and definitively—that Bitcoin can support sophisticated, permanent digital art without off-chain dependencies.
 
 ---
 
 ## TL;DR (For Collectors & Builders)
 
-- Fully on‑chain, interactive 3D generative art on Bitcoin
+- Fully on-chain, interactive 3D generative art on Bitcoin
 - Each artwork rendered live from code, not stored images
-- Uses recursion, compression, and shared on‑chain libraries
+- Uses recursion, compression, and shared on-chain libraries
 - Historic early sats + early Ordinals experimentation
-- Open‑source tools included to build your own Bitcoin‑native art
+- Open-source tools included to build your own Bitcoin-native art
 
 ---
 
@@ -29,7 +29,7 @@
 ## Table of Contents
 
 - [Why OCM Dimensions Matters](#why-ocm-dimensions-matters)
-- [Historical Context: Bitcoin Ordinals & On‑Chain Art](#historical-context-bitcoin-ordinals--on-chain-art)
+- [Historical Context: Bitcoin Ordinals & On-Chain Art](#historical-context-bitcoin-ordinals--on-chain-art)
 - [Technical Firsts](#technical-firsts)
 - [About This Repository](#about-this-repository)
 - [Quick Start](#quick-start)
@@ -45,23 +45,23 @@
 
 OCM Dimensions expanded the boundaries of what was thought possible on Bitcoin:
 
-- **High‑fidelity 3D art**
-  Each piece is a real‑time rendered 3D animation that adapts to any screen resolution, including 4K+ displays.
+- **High-fidelity 3D art**
+  Each piece is a real-time rendered 3D animation that adapts to any screen resolution, including 4K+ displays.
 
-- **Extreme on‑chain efficiency**
+- **Extreme on-chain efficiency**
   Each artwork is under ~1KB despite its visual complexity—made possible through generative code, compression, and recursion.
 
-- **Protocol‑level permanence**
+- **Protocol-level permanence**
   No IPFS. No APIs. No servers. Everything needed to render the art lives on Bitcoin itself.
 
-- **Bitcoin‑native provenance**
-  Early parent–child inscription patterns define collection membership and authenticity directly on‑chain.
+- **Bitcoin-native provenance**
+  Early parent-child inscription patterns define collection membership and authenticity directly on-chain.
 
 OCM Dimensions helped establish Bitcoin Ordinals as a serious medium for generative and conceptual digital art.
 
 ---
 
-## Historical Context: Bitcoin Ordinals & On‑Chain Art
+## Historical Context: Bitcoin Ordinals & On-Chain Art
 
 Bitcoin Ordinals allow individual satoshis to carry arbitrary data—turning the smallest unit of Bitcoin into a permanent digital artifact.
 
@@ -72,11 +72,11 @@ OCM Dimensions challenged that assumption.
 By combining:
 - **Generative art** (code instead of images),
 - **Compression** (gzip + base64),
-- **Recursion** (shared on‑chain libraries: Three.js, p5.js),
+- **Recursion** (shared on-chain libraries: Three.js, p5.js),
 
-OCM Dimensions demonstrated that **complex, interactive, high‑resolution art** could live entirely on Bitcoin.
+OCM Dimensions demonstrated that **complex, interactive, high-resolution art** could live entirely on Bitcoin.
 
-Many techniques now considered standard in advanced Ordinals development—recursive calls, shared libraries, parent–child provenance—were first demonstrated publicly at scale in OCM Dimensions.
+Many techniques now considered standard in advanced Ordinals development—recursive calls, shared libraries, parent-child provenance—were first demonstrated publicly at scale in OCM Dimensions.
 
 Part of the art of Dimensions is the concept of being a seed in a growing network of art on Bitcoin. Each new artwork created that is enabled by Dimensions is a new branch in the growing on-chain "tree" of networked art. Now, after two years, the tree has grown into a forest of art works by numerous artists and thousands of works (many still waiting to be discovered!). OCM Dimensions is one of the most linked inscriptions on Bitcoin.
 
@@ -85,9 +85,9 @@ Part of the art of Dimensions is the concept of being a seed in a growing networ
 ## Technical Firsts
 
 ### Recursive Inscriptions
-OCM Dimensions pioneered recursion with code on Bitcoin, allowing inscriptions to call other inscriptions at render time. This made modular, composable on‑chain software possible.
+OCM Dimensions pioneered recursion with code on Bitcoin, allowing inscriptions to call other inscriptions at render time. This made modular, composable on-chain software possible.
 
-### On‑Chain Libraries
+### On-Chain Libraries
 Compressed versions of:
 - **Three.js** (3D rendering)
 - **p5.js** (generative art)
@@ -95,28 +95,28 @@ Compressed versions of:
 
 were inscribed once and reused across artworks—dramatically reducing size and enabling rich visuals.
 
-### Parent–Child Provenance
+### Parent-Child Provenance
 A parent inscription defines the collection. Child inscriptions define individual artworks. Authenticity and membership are verifiable at the protocol level.
 
 ### Historic Satoshis
 Early Dimensions pieces were inscribed on satoshis mined in January 2009, embedding the work directly into Bitcoin’s earliest history.
 
-### On‑Chain Random Reveal
-The first fully on‑chain random reveal mechanisms on Bitcoin, ensuring fair distribution without off‑chain randomness. Originally thought impossible with immutable inscriptions.
+### On-Chain Random Reveal
+The first fully on-chain random reveal mechanisms on Bitcoin, ensuring fair distribution without off-chain randomness. Originally thought impossible with immutable inscriptions.
 
 ---
 
 ## About This Repository
 
-This repository contains the **open‑source tooling** developed for OCM Dimensions, and available for everyone to use.
+This repository contains the **open-source tooling** developed for OCM Dimensions, and available for everyone to use.
 
 It enables artists and developers to:
 - Build generative and interactive Ordinals
 - Compress HTML/JS for Bitcoin constraints
-- Reuse on‑chain libraries via recursion
+- Reuse on-chain libraries via recursion
 - Create rich visuals without protocol changes
 
-These tools are production‑proven by OCM Dimensions itself.
+These tools are production-proven by OCM Dimensions itself.
 
 The On-chain library inscriptions:
 
@@ -205,14 +205,14 @@ Run a smoke test build of all three command-line workflows:
 
 ## Repository Structure
 
-- **tools/compress-html/** – Compress a single HTML file using gzip and base64.
-- **tools/threejs/** – Helper scripts for Three.js projects.
-- **tools/p5js/** – Helper scripts for p5.js projects.
-- **tools/browserUI/** – In-browser interface to bundle code with selected libraries.
-- **tools/compress-html/examples/** – Samples demonstrating larger pieces of content.
-- **tools/compress-html/onepage/** – Example output from the browser UI.
-- **tutorials/** – Step-by-step guides for the Three.js, p5.js, and compressed HTML workflows.
-- **scripts/** – Repository smoke tests.
+- **tools/compress-html/** - Compress a single HTML file using gzip and base64.
+- **tools/threejs/** - Helper scripts for Three.js projects.
+- **tools/p5js/** - Helper scripts for p5.js projects.
+- **tools/browserUI/** - In-browser interface to bundle code with selected libraries.
+- **tools/compress-html/examples/** - Samples demonstrating larger pieces of content.
+- **tools/compress-html/onepage/** - Example output from the browser UI.
+- **tutorials/** - Step-by-step guides for the Three.js, p5.js, and compressed HTML workflows.
+- **scripts/** - Repository smoke tests.
 
 Each directory includes a README with specific build instructions.
 
@@ -220,9 +220,9 @@ Each directory includes a README with specific build instructions.
 
 ## Inscribing on Bitcoin
 
-Once your final `index.html` is ready, inscribe it using any Ordinals‑compatible wallet or service.
+Once your final `index.html` is ready, inscribe it using any Ordinals-compatible wallet or service.
 
-Your artwork will render directly from on‑chain code—no external infrastructure required.
+Your artwork will render directly from on-chain code—no external infrastructure required.
 
 ---
 

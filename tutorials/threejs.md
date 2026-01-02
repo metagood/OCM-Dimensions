@@ -1,6 +1,8 @@
 # Three.js workflow
 
 This workflow uses the OCM Dimensions inscription to load **fflate + Three.js** on-chain, then injects your compressed scene logic.
+Only the core Three.js bundle is provided, so additional helpers (like `GLTFLoader`)
+must be bundled or inlined into your scene code if you need them.
 
 ## 1) Add your scene code
 

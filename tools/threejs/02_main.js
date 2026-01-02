@@ -14,24 +14,10 @@ function ocmCallback() {
   const light = new THREE.PointLight(0xffffff, 1, 100);
   light.position.set(1, 1, 1);
   scene.add(light);
-  // const geometry = new THREE.TorusKnotGeometry(10, 2, 200, 20, 6, 8);
-  // const material = new THREE.MeshStandardMaterial({ color: 0xffffaa, wireframe: false });
-  const modelPath = './myModel.glb';
-  const loader = new THREE.GLTFLoader();
-
-  loader.load(modelPath, function (gltf) {
-    const model = gltf.scene;
-    const mesh = model.children[0]; // first object in the scene
-    const geometry = mesh.geometry; 
-    const material = mesh.material;
-    const torusKnot = new THREE.Mesh(geometry, material);
-    scene.add(torusKnot);
-    animate();
-  },
-  undefined,
-  function (error) {
-    console.error(error);
-  });
+  const geometry = new THREE.TorusKnotGeometry(10, 2, 200, 20, 6, 8);
+  const material = new THREE.MeshStandardMaterial({ color: 0xffffaa, wireframe: false });
+  const torusKnot = new THREE.Mesh(geometry, material);
+  scene.add(torusKnot);
 
   function animate() {
     requestAnimationFrame(animate);
@@ -42,5 +28,6 @@ function ocmCallback() {
     renderer.render(scene, camera);
   }
 
+  animate();
   document.querySelector('#scene').appendChild(renderer.domElement);
 }

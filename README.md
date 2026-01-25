@@ -33,6 +33,7 @@
 - [Technical Firsts](#technical-firsts)
 - [About This Repository](#about-this-repository)
 - [Quick Start](#quick-start)
+- [Documentation](#documentation)
 - [Repository Structure](#repository-structure)
 - [Inscribing on Bitcoin](#inscribing-on-bitcoin)
 - [Contributing](#contributing)
@@ -135,86 +136,138 @@ Direct links:
 
 ### Prerequisites
 
-You will need the following installed on your machine:
-- Node.js and npm. You can download these from [here](https://nodejs.org/).
-- `make` command. This is usually pre-installed on Unix-based systems. For Windows, you can use a utility like [Make for Windows](http://gnuwin32.sourceforge.net/packages/make.htm).
+- **Node.js 18+** - Download from [nodejs.org](https://nodejs.org/)
+- That's it! No other dependencies required.
 
 ### Installation
-
-You can download the tools directly from this GitHub repository. Simply click on the 'Code' button on this page and then click 'Download ZIP'. Once downloaded, unzip the file and navigate to the resulting directory in your terminal.
-
-If you have `git` installed, you can also clone this repository by running:
 
 ```bash
 git clone https://github.com/metagood/OCM-Dimensions.git
 cd OCM-Dimensions
 ```
 
-### Workflows
-
-Pick the workflow that matches your project:
-
-- **Browser UI** (no terminal needed): open `tools/browserUI/index.html` in your browser and use the **Compile** button to generate a ready-to-inscribe page.
-- **Three.js**: use `tools/threejs` to compress your scene logic and auto-load the on-chain Three.js + fflate bundle.
-- **p5.js**: use `tools/p5js` to compress your sketch and auto-load the on-chain p5.js library.
-- **Compress HTML**: use `tools/compress-html` when you already have a full HTML page you want to gzip+base64 and stream on-chain.
-
-For guided walkthroughs, start in `tutorials/README.md`.
-
-### Usage
-
-#### Compress HTML
-
-1. Navigate to the `tools/compress-html` directory with `cd tools/compress-html`.
-2. Place your `.html` file in the `input` directory.
-3. Run `make clean && make` in the terminal.
-4. Your compressed file will be `index.html` (for inscribing) and `index.local.html` (for local preview).
-5. Open `index.local.html` in a browser to test locally with the Ordinals content URLs already in place.
-
-#### Use Three.js
-
-1. Navigate to the `tools/threejs` directory with `cd tools/threejs`.
-2. Minify your `02_main.js` file and save it as `compressed-inputs/02_main.min.js`.
-    - If you have `minify` installed, run `minify 02_main.js > compressed-inputs/02_main.min.js` in the terminal.
-    - If you don't have `minify`, just put the js code in `compressed-inputs/02_main.min.js` directly.
-3. Run `make clean && make` in the terminal.
-4. Your final files will be `index.html` (for inscribing) and `index.local.html` (for local preview).
-5. Open `index.local.html` in a browser to test locally with the Ordinals content URLs already in place.
-
-#### Use p5.js
-
-1. Navigate to the `tools/p5js` directory with `cd tools/p5js`.
-2. Put your js code in `input/02_main.js`.
-3. Run `make clean && make` in the terminal.
-4. Your final files will be `index.html` (for inscribing) and `index.local.html` (for local preview).
-5. Open `index.local.html` in a browser to test locally with the Ordinals content URLs already in place.
-
-### Local testing tip
-
-The `make` targets now generate `index.local.html` for each workflow with `https://ordinals.com` prefilled for the content fetches. Use it for local preview, and inscribe `index.html` as-is.
-
-### Tests
-
-Run a smoke test build of all three command-line workflows:
+### Build Your First Inscription (2 minutes)
 
 ```bash
-./scripts/run-smoke-tests.sh
+# Build a Three.js project for local testing
+npm run build:threejs:local
+
+# Open in browser to see the 3D animation
+open tools/threejs/index.local.html
+
+# When ready to inscribe, build the final version
+npm run build:threejs
+# → Creates tools/threejs/index.html (inscribe this!)
+```
+
+The build output shows size and estimated inscription costs:
+
+```
+============================================================
+SIZE REPORT
+============================================================
+Original code size:    1.27 KB
+Compressed (gzip):     642 B (50.7% reduction)
+Final HTML size:       2.22 KB
+------------------------------------------------------------
+ESTIMATED INSCRIPTION COSTS:
+  10 sat/vB        34,050 sats  (0.00034050 BTC)
+============================================================
+```
+
+### Choose Your Workflow
+
+| Workflow | Command | Use Case |
+|----------|---------|----------|
+| **Three.js** | `npm run build:threejs` | 3D graphics and animations |
+| **p5.js** | `npm run build:p5js` | Creative coding sketches |
+| **Compress HTML** | `npm run build:compress-html` | Any HTML/CSS/JS page |
+| **Browser UI** | Open `tools/browserUI/index.html` | No terminal needed |
+
+### Check File Sizes
+
+Before inscribing, check your code size:
+
+```bash
+node tools/size-calc.js your-code.js
+```
+
+### Debug Mode
+
+Add `?debug` to any URL to see console logs:
+```
+tools/threejs/index.local.html?debug
+```
+
+### Run Tests
+
+```bash
+npm test              # Run all tests (149 tests)
+npm run test:smoke    # Quick smoke test
+```
+
+---
+
+## Documentation
+
+New to OCM Dimensions? Start here:
+
+| Document | Description |
+|----------|-------------|
+| **[Getting Started Guide](docs/GETTING_STARTED.md)** | Complete beginner tutorial - your first inscription in 5 minutes |
+| **[Tools Reference](docs/TOOLS.md)** | Detailed documentation for all tools and options |
+| **[Examples](docs/EXAMPLES.md)** | Copy-paste code examples for Three.js, p5.js, and HTML |
+| **[Tutorials](tutorials/README.md)** | Step-by-step workflow guides |
+
+### Quick Reference
+
+```bash
+# Build commands
+npm run build:threejs         # Build Three.js project
+npm run build:threejs:local   # Build for local testing
+npm run build:p5js            # Build p5.js project
+npm run build:compress-html   # Compress generic HTML
+
+# Size checking
+node tools/size-calc.js <file>        # Check a file
+node tools/size-calc.js --dir=src/    # Check a directory
+
+# Testing
+npm test                      # Run all tests
 ```
 
 ---
 
 ## Repository Structure
 
-- **tools/compress-html/** - Compress a single HTML file using gzip and base64.
-- **tools/threejs/** - Helper scripts for Three.js projects.
-- **tools/p5js/** - Helper scripts for p5.js projects.
-- **tools/browserUI/** - In-browser interface to bundle code with selected libraries.
-- **tools/compress-html/examples/** - Samples demonstrating larger pieces of content.
-- **tools/compress-html/onepage/** - Example output from the browser UI.
-- **tutorials/** - Step-by-step guides for the Three.js, p5.js, and compressed HTML workflows.
-- **scripts/** - Repository smoke tests.
+```
+OCM-Dimensions/
+├── docs/                           # Documentation
+│   ├── GETTING_STARTED.md          # Beginner tutorial
+│   ├── TOOLS.md                    # Tools reference
+│   └── EXAMPLES.md                 # Code examples
+├── tools/
+│   ├── build-cli.js                # Cross-platform build CLI
+│   ├── size-calc.js                # Size calculator tool
+│   ├── inscriptions.json           # Central inscription config
+│   ├── browserUI/                  # Visual interface (no terminal)
+│   ├── threejs/                    # Three.js workflow
+│   ├── p5js/                       # p5.js workflow
+│   └── compress-html/              # Generic HTML compression
+├── tutorials/                      # Step-by-step workflow guides
+├── tests/                          # Test suite (149 tests)
+├── scripts/                        # CI/smoke tests
+└── package.json                    # NPM scripts
+```
 
-Each directory includes a README with specific build instructions.
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `tools/build-cli.js` | Main build tool - works on Windows, Mac, Linux |
+| `tools/size-calc.js` | Check file sizes and estimate costs |
+| `tools/inscriptions.json` | All inscription IDs in one place |
+| `tools/browserUI/index.html` | Visual tool - no terminal needed |
 
 ---
 

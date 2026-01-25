@@ -104,7 +104,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:10px 16p
 <script>
 // Inscription IDs for recursive loading
 const INSCRIPTIONS = {
-  fflate: '6bac7ab4ce8d5d32f202c2e31bba2b5476a18275802b4e0595c708760f9f56b5i0',
+  fflateCompress: 'f815bd5c566c6e46de5cdb6ccb3a7043c63deeba61f4234baea84b602b0d4440i0',
   ocmDimensions: '2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0',
   p5js: '255ce0c5a0d8aca39510da72e604ef8837519028827ba7b7f723b7489f3ec3a4i0'
 };
@@ -354,6 +354,10 @@ let fflateLoaded = false;
 let fflateLib = null;
 let debounceTimer = null;
 
+// Base URL for /content/ - empty when on-chain, ordinals.com when local
+const isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const contentBase = isLocal ? 'https://ordinals.com' : '';
+
 // DOM elements
 const editor = document.getElementById('editor');
 const preview = document.getElementById('preview');
@@ -388,33 +392,32 @@ async function init() {
   await loadFflate();
 }
 
-// Load fflate from inscription (or CDN for local testing)
+// Load full fflate for compression (size calc + download)
 async function loadFflate() {
   try {
-    // Try loading from inscription first
-    let code;
-    try {
-      const resp = await fetch(`/content/${INSCRIPTIONS.fflate}`);
-      if(resp.ok) code = await resp.text();
-    } catch(e) {
-      console.log('Inscription fetch failed, trying CDN...');
+    const resp = await fetch(`${contentBase}/content/${INSCRIPTIONS.fflateCompress}`);
+    if(!resp.ok) throw new Error('Fetch failed: ' + resp.status);
+    const code = await resp.text();
+    // ES module - import via blob URL
+    const blob = new Blob([code], {type: 'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    const module = await import(url);
+    URL.revokeObjectURL(url);
+    fflateLib = module;
+    // Check if we have compression support (gzipSync)
+    if(fflateLib && typeof fflateLib.gzipSync === 'function') {
+      fflateLoaded = true;
+      console.log('fflate loaded with compression support');
+      updateSizeInfo();
+    } else {
+      console.log('fflate loaded but no gzipSync - size calc will estimate only');
+      fflateLoaded = false;
+      updateSizeInfo();
     }
-
-    // Fallback to CDN for local testing
-    if(!code) {
-      const resp = await fetch('https://cdn.jsdelivr.net/npm/fflate@0.8.0/umd/index.js');
-      if(!resp.ok) throw new Error('CDN fetch failed: ' + resp.status);
-      code = await resp.text();
-    }
-
-    eval(code);
-    fflateLib = window.fflate;
-    fflateLoaded = true;
-    console.log('fflate loaded successfully');
-    updateSizeInfo(); // Update size now that fflate is ready
   } catch(e) {
     console.error('Failed to load fflate:', e);
-    showError('Failed to load fflate library. Size calculations disabled. Error: ' + e.message);
+    fflateLoaded = false;
+    updateSizeInfo();
   }
 }
 
@@ -452,8 +455,6 @@ function updateCharCount() {
 
 // Update size information
 function updateSizeInfo() {
-  if(!fflateLoaded) return;
-
   const code = editor.value;
   if(!code) {
     document.getElementById('sizeOriginal').textContent = '0 B';
@@ -468,14 +469,25 @@ function updateSizeInfo() {
 
   try {
     const original = new TextEncoder().encode(code).length;
-    const compressed = fflateLib.gzipSync(fflateLib.strToU8(code), {level: 9});
-    const base64 = btoa(String.fromCharCode(...compressed));
+    let compressedLen;
+
+    if(fflateLoaded && fflateLib && typeof fflateLib.gzipSync === 'function') {
+      // Real compression
+      const codeBytes = new TextEncoder().encode(code);
+      const compressed = fflateLib.gzipSync(codeBytes, {level: 9});
+      compressedLen = compressed.length;
+    } else {
+      // Estimate: JS code typically compresses to ~30-40% of original
+      compressedLen = Math.ceil(original * 0.35);
+    }
+    // Base64 encoding adds ~33% overhead
+    const base64Len = Math.ceil(compressedLen * 1.37);
     const templateOverhead = 700;
-    const final = base64.length + templateOverhead;
+    const final = base64Len + templateOverhead;
 
     document.getElementById('sizeOriginal').textContent = formatBytes(original);
-    document.getElementById('sizeCompressed').textContent = formatBytes(compressed.length);
-    document.getElementById('sizeFinal').textContent = formatBytes(final);
+    document.getElementById('sizeCompressed').textContent = formatBytes(compressedLen) + (fflateLoaded ? '' : ' (est)');
+    document.getElementById('sizeFinal').textContent = formatBytes(final) + (fflateLoaded ? '' : ' (est)');
 
     // Size badge
     const badge = document.getElementById('sizeBadge');
@@ -529,24 +541,41 @@ function runPreview() {
     html = buildPreviewHtml(code, lib);
   }
 
-  const blob = new Blob([html], {type: 'text/html'});
-  preview.src = URL.createObjectURL(blob);
+  // Always use srcdoc - contentDocument.write blocked by sandbox
+  preview.srcdoc = html;
 }
 
-// Build preview HTML (uses CDN for preview, inscription for final)
+// Build preview HTML (uses recursive inscription loading)
+// srcdoc has opaque origin, so we need full URLs
 function buildPreviewHtml(code, lib) {
+  // Use ordinals.com for local, current origin for on-chain
+  const fetchBase = isLocal ? 'https://ordinals.com' : location.origin;
+
   if(lib === 'threejs') {
+    // Load Three.js from OCM Dimensions inscription
     return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden}</style></head>
 <body><div id="scene"></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"><\/script>
 <script>
-${code}
-if(typeof ocmCallback === 'function') ocmCallback();
+(async function(){
+  const r=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  const html=await r.text();
+  const lines=html.split("\\n");
+  // Line 28: fflate library
+  (0,eval)(lines[28]);
+  // Line 32: const d3='...' - extract the base64 string
+  const d3Match=lines[32].match(/='([^']+)'/);
+  if(!d3Match)throw new Error('Could not extract Three.js base64');
+  const d3=d3Match[1];
+  // Decompress into THREE
+  const threeCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(d3)).map(c=>c.charCodeAt(0)))));
+  (0,eval)(threeCode);
+  ${code}
+  if(typeof ocmCallback==='function')ocmCallback();
+})();
 <\/script></body></html>`;
   } else if(lib === 'p5js') {
     // For preview: extract the new p5(...) part and run it directly
-    // Skip the fflate decompression since p5 is loaded from CDN
     let sketchCode = code;
 
     // If wrapped in fflateCallback2, extract just the new p5(...) part
@@ -555,12 +584,22 @@ if(typeof ocmCallback === 'function') ocmCallback();
       sketchCode = p5Match[0] + ';';
     }
 
+    // Load p5.js from inscription via OCM Dimensions fflate
     return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{display:block}</style></head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"><\/script>
 <script>
-${sketchCode}
+(async function(){
+  const ocmR=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  const ocmHtml=await ocmR.text();
+  const fflateS=ocmHtml.split("\\n")[28];
+  (0,eval)(fflateS);
+  const p5R=await fetch('${fetchBase}/content/${INSCRIPTIONS.p5js}');
+  const p5B64=await p5R.text();
+  const p5Code=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(p5B64)).map(c=>c.charCodeAt(0)))));
+  (0,eval)(p5Code);
+  ${sketchCode}
+})();
 <\/script></body></html>`;
   }
   return code;
@@ -568,9 +607,14 @@ ${sketchCode}
 
 // Build inscription HTML (uses recursive loading)
 function buildInscriptionHtml(code, lib) {
-  if(!fflateLoaded) return '';
+  // Check if compression is available
+  if(!fflateLib || typeof fflateLib.gzipSync !== 'function') {
+    showError('Download requires compression (gzipSync) which is not available. Use the CLI tools to build inscriptions.');
+    return '';
+  }
 
-  const compressed = fflateLib.gzipSync(fflateLib.strToU8(code), {level: 9});
+  const codeBytes = new TextEncoder().encode(code);
+  const compressed = fflateLib.gzipSync(codeBytes, {level: 9});
   const base64 = btoa(String.fromCharCode(...compressed));
 
   if(lib === 'threejs') {
@@ -676,7 +720,20 @@ function downloadInscription() {
     return;
   }
 
+  // Check if compression is available
+  if(!fflateLib || typeof fflateLib.gzipSync !== 'function') {
+    // No compression - copy code and show instructions
+    navigator.clipboard.writeText(code).then(() => {
+      showError('Code copied! Compression not available on-chain. Use CLI: save code to file, then run: node tools/build-cli.js --workflow=' + lib);
+    }).catch(() => {
+      showError('Compression not available on-chain. Copy your code manually and use CLI: node tools/build-cli.js --workflow=' + lib);
+    });
+    return;
+  }
+
   const html = buildInscriptionHtml(code, lib);
+  if(!html) return; // buildInscriptionHtml shows error
+
   const blob = new Blob([html], {type: 'text/html'});
   const url = URL.createObjectURL(blob);
 

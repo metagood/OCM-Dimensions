@@ -1,16 +1,29 @@
 <html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><div id="scene"></div><script>
+const _dbg=new URLSearchParams(window.location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 td='SRC_COMPRESSED_STRING';
-function fflateCallback(){newS=document.createElement('script');
+function fflateCallback(){
+_log('Decompressing user code...');
+try{
+newS=document.createElement('script');
 newS.innerHTML=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map((char)=>char.charCodeAt(0)))))+";fflateCallback2()";
-document.body.appendChild(newS);}
+document.body.appendChild(newS);
+_log('User code loaded successfully');
+}catch(e){console.error('[OCM] Decompression failed:',e);}}
 (async function(){
-response=await fetch(`/content/2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0`);
+try{
+_log('Fetching OCM Dimensions inscription...');
+response=await fetch(`/content/{{OCM_DIMENSIONS_ID}}`);
+if(!response.ok)throw new Error(`Fetch failed: ${response.status}`);
 hl=await response.text();
+_log('OCM Dimensions loaded, extracting libraries...');
 hlL=hl.split("\n");
-fflateS=hlL[28];
-d3S=hlL[32];
+fflateS=hlL[{{FFLATE_LINE}}];
+d3S=hlL[{{THREEJS_LINE}}];
+_log('fflate line:',{{FFLATE_LINE}},', Three.js line:',{{THREEJS_LINE}});
 ffCS="fflateCallback();";
 newS=document.createElement('script');
 newS.innerHTML=[fflateS,d3S,ffCS].join(";\n");
-document.body.appendChild(newS);})();
+document.body.appendChild(newS);
+}catch(e){console.error('[OCM] Failed to load libraries:',e);document.body.innerHTML='<pre style="color:red;padding:20px;">Error loading inscription libraries. Check console for details.</pre>';}})();
 </script></body></html>

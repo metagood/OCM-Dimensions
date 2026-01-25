@@ -1,0 +1,38 @@
+{
+  "name": "ocm-dimensions",
+  "version": "1.0.0",
+  "description": "OCM Dimensions - Toolkit for creating compressed on-chain generative art",
+  "private": true,
+  "scripts": {
+    "build:threejs": "node tools/build-cli.js --workflow=threejs",
+    "build:threejs:local": "node tools/build-cli.js --workflow=threejs --base-url=https://ordinals.com",
+    "build:p5js": "node tools/build-cli.js --workflow=p5js",
+    "build:p5js:local": "node tools/build-cli.js --workflow=p5js --base-url=https://ordinals.com",
+    "build:compress-html": "node tools/build-cli.js --workflow=compress-html",
+    "build:compress-html:local": "node tools/build-cli.js --workflow=compress-html --base-url=https://ordinals.com",
+    "build:all": "npm run build:threejs && npm run build:p5js && npm run build:compress-html",
+    "build:all:local": "npm run build:threejs:local && npm run build:p5js:local && npm run build:compress-html:local",
+    "size": "node tools/size-calc.js",
+    "test": "node --test tests/*.test.js",
+    "test:build-cli": "node --test tests/build-cli.test.js",
+    "test:size-calc": "node --test tests/size-calc.test.js",
+    "test:templates": "node --test tests/templates.test.js",
+    "test:browser-ui": "node --test tests/browser-ui.test.js",
+    "test:integration": "node --test tests/integration.test.js",
+    "test:smoke": "./scripts/run-smoke-tests.sh"
+  },
+  "keywords": [
+    "bitcoin",
+    "ordinals",
+    "inscriptions",
+    "generative-art",
+    "compression",
+    "threejs",
+    "p5js"
+  ],
+  "author": "OCM Dimensions Contributors",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

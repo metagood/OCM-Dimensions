@@ -34,6 +34,13 @@
 				}
 			},
 		}
+
+		// Size thresholds (in bytes)
+		const SIZE_THRESHOLDS = {
+			good: 50 * 1024,      // < 50KB = green
+			warning: 100 * 1024,  // < 100KB = yellow/orange
+			// > 100KB = red
+		};
 	</script>
 
 	<style>
@@ -129,6 +136,117 @@
 		textarea {
 			font-family: 'Courier New', Courier, monospace;
 		}
+
+		/* Size Preview Styles */
+		#sizePreview {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 20px;
+			border-radius: 8px;
+			margin-bottom: 20px;
+		}
+
+		#sizePreview h3 {
+			margin: 0 0 15px 0;
+			font-size: 18px;
+		}
+
+		.size-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 15px;
+		}
+
+		.size-item {
+			background: rgba(255,255,255,0.15);
+			padding: 12px;
+			border-radius: 6px;
+		}
+
+		.size-item label {
+			display: block;
+			font-size: 12px;
+			opacity: 0.8;
+			margin-bottom: 4px;
+		}
+
+		.size-item .value {
+			font-size: 20px;
+			font-weight: bold;
+		}
+
+		.size-indicator {
+			text-align: center;
+			padding: 15px;
+			margin-top: 15px;
+			border-radius: 6px;
+			font-weight: bold;
+			font-size: 16px;
+		}
+
+		.size-indicator.good {
+			background: #10b981;
+		}
+
+		.size-indicator.warning {
+			background: #f59e0b;
+		}
+
+		.size-indicator.danger {
+			background: #ef4444;
+		}
+
+		.size-indicator.empty {
+			background: rgba(255,255,255,0.2);
+			font-weight: normal;
+			font-style: italic;
+		}
+
+		.cost-preview {
+			margin-top: 15px;
+			padding: 12px;
+			background: rgba(255,255,255,0.1);
+			border-radius: 6px;
+		}
+
+		.cost-preview h4 {
+			margin: 0 0 10px 0;
+			font-size: 14px;
+			opacity: 0.9;
+		}
+
+		.cost-row {
+			display: flex;
+			justify-content: space-between;
+			font-size: 13px;
+			padding: 4px 0;
+		}
+
+		.cost-row .rate {
+			opacity: 0.7;
+		}
+
+		/* Error Display */
+		#errorDisplay {
+			display: none;
+			background: #fee2e2;
+			border: 1px solid #ef4444;
+			color: #991b1b;
+			padding: 15px;
+			border-radius: 8px;
+			margin-bottom: 20px;
+		}
+
+		#errorDisplay h4 {
+			margin: 0 0 10px 0;
+			color: #ef4444;
+		}
+
+		#errorDisplay pre {
+			margin: 0;
+			white-space: pre-wrap;
+			font-size: 13px;
+		}
     </style>
 
 </head>
@@ -137,6 +255,45 @@
 	<main>
 
 		<h1>Compress your code and use on-chain libraries</h1>
+
+		<!-- Size Preview Section -->
+		<div id="sizePreview" class="section">
+			<h3>Real-time Size Preview</h3>
+			<div class="size-grid">
+				<div class="size-item">
+					<label>Original Size</label>
+					<div class="value" id="originalSize">0 B</div>
+				</div>
+				<div class="size-item">
+					<label>Compressed (gzip)</label>
+					<div class="value" id="compressedSize">0 B</div>
+				</div>
+				<div class="size-item">
+					<label>Base64 Encoded</label>
+					<div class="value" id="base64Size">0 B</div>
+				</div>
+				<div class="size-item">
+					<label>Est. Final HTML</label>
+					<div class="value" id="finalSize">0 B</div>
+				</div>
+			</div>
+			<div class="size-indicator empty" id="sizeIndicator">
+				Paste or upload code to see size estimate
+			</div>
+			<div class="cost-preview" id="costPreview" style="display: none;">
+				<h4>Estimated Inscription Cost</h4>
+				<div class="cost-row"><span class="rate">1 sat/vB</span><span id="cost1">-</span></div>
+				<div class="cost-row"><span class="rate">5 sat/vB</span><span id="cost5">-</span></div>
+				<div class="cost-row"><span class="rate">10 sat/vB</span><span id="cost10">-</span></div>
+				<div class="cost-row"><span class="rate">20 sat/vB</span><span id="cost20">-</span></div>
+			</div>
+		</div>
+
+		<!-- Error Display -->
+		<div id="errorDisplay">
+			<h4>Error</h4>
+			<pre id="errorMessage"></pre>
+		</div>
 
 		<div class="section">
 			<h2>Select Libraries</h2>
@@ -186,7 +343,7 @@
 
 			</script>
 
-			
+
 		</div>
 
 		<div id="toggleButtons">
@@ -194,39 +351,182 @@
 			<button class="toggleButton" id="fileCompressButton" onclick="showDiv('fileCompress')">Upload Your Files</button>
 		</div>
 		<div class="section tabs">
-	
+
 			<div id="textCompress" class="panel">
 				<h2>Compress Text</h2>
-				<textarea id="inputText" rows="10" cols="50"></textarea><br>
+				<textarea id="inputText" rows="10" cols="50" placeholder="Paste your JavaScript or HTML code here..."></textarea><br>
 				<button onclick="compressText()">Compress</button>
 			</div>
-	
+
 			<div id="fileCompress" class="panel">
 				<h2>Compress Files</h2>
 				<input type="file" id="fileInput" multiple><br>
 				<button onclick="compressFiles()">Compress</button>
 			</div>
 		</div>
-	
+
 		<script>
 			function showDiv(id) {
 				// Hide sections
 				document.getElementById('textCompress').style.display = 'none';
 				document.getElementById('fileCompress').style.display = 'none';
-	
+
 				// Remove active class from buttons
 				document.getElementById('textCompressButton').classList.remove('active');
 				document.getElementById('fileCompressButton').classList.remove('active');
-	
+
 				// Show selected section
 				document.getElementById(id).style.display = 'block';
-	
+
 				// Add active class to selected button
 				if (id === 'textCompress') {
 					document.getElementById('textCompressButton').classList.add('active');
 				} else if (id === 'fileCompress') {
 					document.getElementById('fileCompressButton').classList.add('active');
 				}
+			}
+
+			// Size calculation utilities
+			function formatBytes(bytes) {
+				if (bytes < 1024) return bytes + ' B';
+				if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+				return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+			}
+
+			function formatSats(sats) {
+				if (sats < 1000) return sats + ' sats';
+				if (sats < 1000000) return (sats / 1000).toFixed(1) + 'K sats';
+				return (sats / 1000000).toFixed(2) + 'M sats';
+			}
+
+			function calculateSizes(text) {
+				if (!text || text.length === 0) {
+					return null;
+				}
+
+				try {
+					const buf = fflate.strToU8(text);
+					const compressed = fflate.gzipSync(buf, { level: 6, mem: 8 });
+					const base64 = btoa(String.fromCharCode.apply(null, compressed));
+
+					// Template overhead is approximately 700 bytes
+					const templateOverhead = 700;
+					const finalSize = base64.length + templateOverhead;
+
+					return {
+						original: buf.length,
+						compressed: compressed.length,
+						base64: base64.length,
+						final: finalSize,
+						compressionRatio: ((1 - compressed.length / buf.length) * 100).toFixed(1)
+					};
+				} catch (e) {
+					console.error('Size calculation error:', e);
+					return null;
+				}
+			}
+
+			function estimateCost(bytes) {
+				const vBytes = Math.ceil(bytes * 1.5);
+				return {
+					1: vBytes * 1,
+					5: vBytes * 5,
+					10: vBytes * 10,
+					20: vBytes * 20
+				};
+			}
+
+			function updateSizePreview(text) {
+				const sizes = calculateSizes(text);
+
+				if (!sizes) {
+					document.getElementById('originalSize').textContent = '0 B';
+					document.getElementById('compressedSize').textContent = '0 B';
+					document.getElementById('base64Size').textContent = '0 B';
+					document.getElementById('finalSize').textContent = '0 B';
+
+					const indicator = document.getElementById('sizeIndicator');
+					indicator.className = 'size-indicator empty';
+					indicator.textContent = 'Paste or upload code to see size estimate';
+
+					document.getElementById('costPreview').style.display = 'none';
+					return;
+				}
+
+				document.getElementById('originalSize').textContent = formatBytes(sizes.original);
+				document.getElementById('compressedSize').textContent = formatBytes(sizes.compressed) + ` (${sizes.compressionRatio}% smaller)`;
+				document.getElementById('base64Size').textContent = formatBytes(sizes.base64);
+				document.getElementById('finalSize').textContent = formatBytes(sizes.final);
+
+				// Update size indicator
+				const indicator = document.getElementById('sizeIndicator');
+				if (sizes.final < SIZE_THRESHOLDS.good) {
+					indicator.className = 'size-indicator good';
+					indicator.textContent = 'Excellent! Very affordable inscription size.';
+				} else if (sizes.final < SIZE_THRESHOLDS.warning) {
+					indicator.className = 'size-indicator warning';
+					indicator.textContent = 'Good size. Reasonable inscription cost.';
+				} else {
+					indicator.className = 'size-indicator danger';
+					indicator.textContent = 'Large file! Consider optimizing your code.';
+				}
+
+				// Update cost estimates
+				const costs = estimateCost(sizes.final);
+				document.getElementById('cost1').textContent = formatSats(costs[1]);
+				document.getElementById('cost5').textContent = formatSats(costs[5]);
+				document.getElementById('cost10').textContent = formatSats(costs[10]);
+				document.getElementById('cost20').textContent = formatSats(costs[20]);
+				document.getElementById('costPreview').style.display = 'block';
+			}
+
+			// Real-time size preview for text input
+			let debounceTimer;
+			document.getElementById('inputText').addEventListener('input', function() {
+				clearTimeout(debounceTimer);
+				debounceTimer = setTimeout(() => {
+					updateSizePreview(this.value);
+				}, 300);
+			});
+
+			// Size preview for file input
+			document.getElementById('fileInput').addEventListener('change', function() {
+				const files = this.files;
+				if (files.length === 0) {
+					updateSizePreview('');
+					return;
+				}
+
+				let concatenatedContent = [];
+				let filesProcessed = 0;
+
+				Array.from(files).forEach(file => {
+					const reader = new FileReader();
+					reader.onload = function(event) {
+						concatenatedContent.push(event.target.result);
+						filesProcessed++;
+
+						if (filesProcessed === files.length) {
+							updateSizePreview(concatenatedContent.join("\n"));
+						}
+					};
+					reader.onerror = function() {
+						showError('Failed to read file: ' + file.name);
+					};
+					reader.readAsText(file);
+				});
+			});
+
+			// Error handling
+			function showError(message) {
+				const errorDisplay = document.getElementById('errorDisplay');
+				const errorMessage = document.getElementById('errorMessage');
+				errorMessage.textContent = message;
+				errorDisplay.style.display = 'block';
+			}
+
+			function hideError() {
+				document.getElementById('errorDisplay').style.display = 'none';
 			}
 		</script>
 
@@ -238,44 +538,66 @@
 		<script>
 
 			async function compressFiles() {
+				hideError();
 				const fileInput = document.getElementById('fileInput');
 				const files = fileInput.files;
+
+				if (files.length === 0) {
+					showError('Please select at least one file to compress.');
+					return;
+				}
+
 				let concatenatedContent = [];
 				let filesProcessed = 0;
 
-				if (files.length > 0) {
-					Array.from(files).forEach(file => {
-						const reader = new FileReader();
-						reader.onload = async function(event) {
-							concatenatedContent.push(event.target.result);
-							filesProcessed++;
+				Array.from(files).forEach(file => {
+					const reader = new FileReader();
+					reader.onload = async function(event) {
+						concatenatedContent.push(event.target.result);
+						filesProcessed++;
 
-							if (filesProcessed == files.length) {
+						if (filesProcessed == files.length) {
+							try {
 								const inputText = concatenatedContent.join("\n");
 								const buf = fflate.strToU8(inputText);
 								const compressed = fflate.gzipSync(buf, { level: 6, mem: 8 });
 								const base64 = btoa(String.fromCharCode.apply(null, compressed));
-							
-								let output = await compileHTML(base64);
-								
-								setDownloadLink(output);
 
+								let output = await compileHTML(base64);
+
+								setDownloadLink(output);
+							} catch (e) {
+								showError('Compression failed: ' + e.message);
 							}
-						};
-						reader.readAsText(file);
-					});
-				}
+						}
+					};
+					reader.onerror = function() {
+						showError('Failed to read file: ' + file.name);
+					};
+					reader.readAsText(file);
+				});
 			}
 
 			async function compressText() {
+				hideError();
 				const inputText = document.getElementById("inputText").value;
-				const buf = fflate.strToU8(inputText);
-				const compressed = fflate.gzipSync(buf, { level: 6, mem: 8 });
-				const base64 = btoa(String.fromCharCode.apply(null, compressed));
-				
-				let output = await compileHTML(base64);
-				
-				setDownloadLink(output);
+
+				if (!inputText || inputText.trim().length === 0) {
+					showError('Please enter some code to compress.');
+					return;
+				}
+
+				try {
+					const buf = fflate.strToU8(inputText);
+					const compressed = fflate.gzipSync(buf, { level: 6, mem: 8 });
+					const base64 = btoa(String.fromCharCode.apply(null, compressed));
+
+					let output = await compileHTML(base64);
+
+					setDownloadLink(output);
+				} catch (e) {
+					showError('Compression failed: ' + e.message);
+				}
 			}
 
 			function setDownloadLink(text) {
@@ -297,7 +619,7 @@
 				document.querySelector('#output-section').style.display='block';
 					document.querySelector("#downloadLink").style.display = 'block';
 				}, 100);
-				
+
 			}
 
 			async function compileHTML(userCode) {
@@ -313,30 +635,37 @@
 					return acc;
 				}, {});
 
-				// Fetch the template file
-				let response = await fetch('template.html');
-				let template = await response.text();
+				try {
+					// Fetch the template file
+					let response = await fetch('template.html');
+					if (!response.ok) {
+						throw new Error('Failed to load template.html (status: ' + response.status + ')');
+					}
+					let template = await response.text();
 
-				// Compile the template
-				let compiledTemplate = Handlebars.compile(template);
+					// Compile the template
+					let compiledTemplate = Handlebars.compile(template);
 
-				// Define the data to replace in the template
-				let obj = serializeObject(selectedLibs);
+					// Define the data to replace in the template
+					let obj = serializeObject(selectedLibs);
 
-				console.log('serializeObject(selectedLibs)', obj);
+					console.log('serializeObject(selectedLibs)', obj);
 
-				let data = { 
-					userCode: userCode,
-					libs: obj
-				};
+					let data = {
+						userCode: userCode,
+						libs: obj
+					};
 
-				// Get the final HTML by passing the data to the compiled template
-				let finalHtml = compiledTemplate(data);
+					// Get the final HTML by passing the data to the compiled template
+					let finalHtml = compiledTemplate(data);
 
+					document.getElementById("output").innerHTML = finalHtml;
 
-				document.getElementById("output").innerHTML = finalHtml;
-
-				return finalHtml;
+					return finalHtml;
+				} catch (e) {
+					showError('Template compilation failed: ' + e.message);
+					throw e;
+				}
 
 			}
 

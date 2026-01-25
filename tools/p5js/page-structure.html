@@ -1,18 +1,33 @@
 <html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+const _dbg=new URLSearchParams(window.location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 td='SRC_COMPRESSED_STRING';
 function fflateCallback(){
+_log('Decompressing user code...');
+try{
 newS=document.createElement('script');
 newS.innerHTML=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map((char)=>char.charCodeAt(0)))))+";fflateCallback2()";
-document.body.appendChild(newS);}
+document.body.appendChild(newS);
+_log('User code loaded successfully');
+}catch(e){console.error('[OCM] Decompression failed:',e);}}
 (async function(){
-resp=await fetch(`/content/2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0`);
+try{
+_log('Fetching OCM Dimensions inscription...');
+resp=await fetch(`/content/{{OCM_DIMENSIONS_ID}}`);
+if(!resp.ok)throw new Error(`Fetch failed: ${resp.status}`);
 html=await resp.text();
+_log('OCM Dimensions loaded, extracting fflate...');
 htmlLines=html.split("\n");
-fflateS=htmlLines[28];
-p5r=await fetch(`/content/255ce0c5a0d8aca39510da72e604ef8837519028827ba7b7f723b7489f3ec3a4i0`);
+fflateS=htmlLines[{{FFLATE_LINE}}];
+_log('fflate line:',{{FFLATE_LINE}});
+_log('Fetching p5.js library...');
+p5r=await fetch(`/content/{{P5JS_ID}}`);
+if(!p5r.ok)throw new Error(`p5.js fetch failed: ${p5r.status}`);
 p5S=`const d3="${await p5r.text()}"`;
+_log('p5.js loaded');
 ffCS="fflateCallback();";
 newS=document.createElement('script');
 newS.innerHTML=[fflateS,p5S,ffCS].join(";\n");
-document.body.appendChild(newS);})();
+document.body.appendChild(newS);
+}catch(e){console.error('[OCM] Failed to load libraries:',e);document.body.innerHTML='<pre style="color:red;padding:20px;">Error loading inscription libraries. Check console for details.</pre>';}})();
 </script></body></html>

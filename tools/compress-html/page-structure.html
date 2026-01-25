@@ -1,20 +1,36 @@
 <html><head><meta charset="utf-8"><style>body {margin: 0;}</style></head><body><div id="scene"></div><script>
+const _dbg=new URLSearchParams(window.location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 d3='SRC_COMPRESSED_STRING';
 function fflateCallback(){
+_log('Decompressing HTML content...');
+try{
 tt=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(d3)).map((char)=>char.charCodeAt(0)))));
+_log('Decompressed HTML length:',tt.length);
 document.body.innerHTML=tt;
 matches=tt.matchAll(/<script[^>]*>(.*?)<\/script>/isg);
+let scriptCount=0;
 for(match of matches){
 script=document.createElement('script');
 script.innerHTML=match[1];
-document.body.appendChild(script);}
-window.onload();}
-(async function(){response=await fetch(`/content/2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0`);
+document.body.appendChild(script);
+scriptCount++;}
+_log('Executed',scriptCount,'script(s)');
+if(typeof window.onload==='function')window.onload();
+}catch(e){console.error('[OCM] Decompression failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px;">Error decompressing content. Check console for details.</pre>';}}
+(async function(){
+try{
+_log('Fetching OCM Dimensions inscription...');
+response=await fetch(`/content/{{OCM_DIMENSIONS_ID}}`);
+if(!response.ok)throw new Error(`Fetch failed: ${response.status}`);
 html=await response.text();
+_log('OCM Dimensions loaded, extracting fflate...');
 htmlLines=html.split("\n");
-fflateScript=htmlLines[28];
+fflateScript=htmlLines[{{FFLATE_LINE}}];
+_log('fflate line:',{{FFLATE_LINE}});
 fflateCallbackScript="fflateCallback();";
 newScript=document.createElement('script');
 newScript.innerHTML=[fflateScript,fflateCallbackScript].join(";\n");
-document.body.appendChild(newScript);})();
+document.body.appendChild(newScript);
+}catch(e){console.error('[OCM] Failed to load libraries:',e);document.body.innerHTML='<pre style="color:red;padding:20px;">Error loading inscription libraries. Check console for details.</pre>';}})();
 </script></body></html>

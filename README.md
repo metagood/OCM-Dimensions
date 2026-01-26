@@ -32,6 +32,7 @@
 - [Historical Context: Bitcoin Ordinals & On-Chain Art](#historical-context-bitcoin-ordinals--on-chain-art)
 - [Technical Firsts](#technical-firsts)
 - [About This Repository](#about-this-repository)
+- [OCM Dimensions Studio](#ocm-dimensions-studio)
 - [Quick Start](#quick-start)
 - [Documentation](#documentation)
 - [Repository Structure](#repository-structure)
@@ -129,6 +130,23 @@ These inscriptions are the foundation of the workflow in this repo. You use recu
 Direct links:
 - https://ordinals.com/inscription/2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0
 - https://ordinals.com/inscription/255ce0c5a0d8aca39510da72e604ef8837519028827ba7b7f723b7489f3ec3a4i0
+
+---
+
+## OCM Dimensions Studio
+
+**[Launch Studio](https://ordinals.com/content/328a5e67e666a4d3fa9cf148649371a66d2d3e092257c4e7c8a7f894d15ce8b7i0)** - A browser-based IDE inscribed directly on Bitcoin.
+
+The Studio lets you create Bitcoin inscriptions without any local setup:
+
+1. **Choose a library** - Three.js, p5.js, Matter.js, GSAP, Tone.js, and more
+2. **Write or paste code** - Use the built-in editor with example templates
+3. **Live preview** - See your artwork render in real-time as you code
+4. **Download** - Get an inscription-ready HTML file with all recursive loading built in
+
+The Studio itself is fully on-chain, demonstrating the power of recursive inscriptions. It loads libraries from other inscriptions and compresses your code for efficient Bitcoin storage.
+
+> **Tip:** Add `?debug` to the URL to see console logs for troubleshooting.
 
 ---
 

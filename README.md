@@ -137,6 +137,8 @@ Direct links:
 
 **[Launch Studio](https://ordinals.com/content/328a5e67e666a4d3fa9cf148649371a66d2d3e092257c4e7c8a7f894d15ce8b7i0)** - A browser-based IDE inscribed directly on Bitcoin.
 
+**[More Examples on Bitcoin](https://ordinals.com/content/5709819775f922917246f64ac6d08a6cc6f7c4d9d927fb0eb180de22027ca2f7i0)** - Additional templates and examples inscribed on Bitcoin.
+
 The Studio lets you create Bitcoin inscriptions without any local setup:
 
 1. **Choose a library** - Three.js, p5.js, Matter.js, GSAP, Tone.js, and more

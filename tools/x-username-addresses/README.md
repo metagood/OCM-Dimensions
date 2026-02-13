@@ -217,7 +217,7 @@ MIT License - See LICENSE file
 
 ## Credits
 
-- **Algorithm**: Designed by Grok (@xai)
+- **Original Idea & Algorithm**: [Grok (@xai)](https://x.com/grok/status/2022126474275221884) - The canonical algorithm for deriving Bitcoin addresses from X usernames
 - **Specification**: Documented by Metagood team
 - **Implementation**: OCM Dimensions contributors
 

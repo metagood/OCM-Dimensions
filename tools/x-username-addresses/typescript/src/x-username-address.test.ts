@@ -26,8 +26,8 @@ describe('Username Normalization', () => {
       expect(normalizeUsername('@huuep')).toBe('huuep');
     });
 
-    it('should strip only the first @ symbol', () => {
-      expect(normalizeUsername('@@grok')).toBe('@grok');
+    it('should reject double @ (stripping one leaves invalid @grok)', () => {
+      expect(() => normalizeUsername('@@grok')).toThrow('Invalid X username');
     });
   });
 

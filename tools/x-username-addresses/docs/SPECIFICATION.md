@@ -448,7 +448,7 @@ It does NOT say: "I cryptographically prove I control this X account." That woul
 ```
 Input: 
   - Claimed username (e.g., "huuep")
-  - Claimed address (e.g., "1KsYPPQejJ4ogx6yBBe2c75iuALZpjur82")
+  - Claimed address (e.g., "1nZpo9Zb84wWDCKAwD2mD8xoUvNAdkD1w")
 
 Process:
   1. Normalize the username → "huuep"
@@ -494,7 +494,7 @@ Output: VERIFIED or FAILED
 │  Output:                                    │
 │  ┌──────────────────────────────────────┐   │
 │  │ Username: huuep                      │   │
-│  │ Derived Address: 1KsYPPQ...          │   │
+│  │ Derived Address: 1nZpo9Z...          │   │
 │  │ Inscriptions: 3 found               │   │
 │  │  - Inscription #12345 (image/png)    │   │
 │  │  - Inscription #12346 (text/plain)   │   │
@@ -503,7 +503,7 @@ Output: VERIFIED or FAILED
 │  │ Derivation:                          │   │
 │  │  SHA-256("huuep") = a3b2c1...        │   │
 │  │  RIPEMD-160(^) = d4e5f6...           │   │
-│  │  Address = 1KsYPPQ...               │   │
+│  │  Address = 1nZpo9Z...               │   │
 │  │                                      │   │
 │  │ ✅ Verified: This address is the     │   │
 │  │    deterministic mapping for @huuep  │   │

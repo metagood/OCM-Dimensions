@@ -45,8 +45,9 @@ class TestNormalization:
         assert normalize_username('\t@Huuep\n') == 'huuep'
     
     def test_double_at_sign(self):
-        """Double @ should strip only the first one."""
-        assert normalize_username('@@grok') == '@grok'
+        """Double @ — stripping one @ leaves @grok which fails validation."""
+        with pytest.raises(ValueError, match="Invalid X username"):
+            normalize_username('@@grok')
     
     def test_underscore_allowed(self):
         """Underscores are valid."""

@@ -113,6 +113,33 @@ describe('Address Derivation', () => {
     });
   });
 
+  describe('cross-implementation test vectors', () => {
+    it('should derive correct address for test_user', () => {
+      const address = usernameToAddress('test_user');
+      expect(address).toBe('1P3KCN8tnhBeHTn6y7VwnjZbfbBFwvX3Ez');
+    });
+
+    it('should derive correct address for abcd', () => {
+      const address = usernameToAddress('abcd');
+      expect(address).toBe('1GhdvJx8G98KbkBBZqVQFfYo9oZr8BLEeU');
+    });
+
+    it('should derive correct address for aaaaaaaaaaaaaaa (max length)', () => {
+      const address = usernameToAddress('aaaaaaaaaaaaaaa');
+      expect(address).toBe('1LoWsQKDTTcCF4gwVTNiQeXKaXTBDQuEjb');
+    });
+
+    it('should derive correct address for ____ (underscores only)', () => {
+      const address = usernameToAddress('____');
+      expect(address).toBe('12Kj8fUtjzte8ddL2Qa5SR1KMmUYQJqY9k');
+    });
+
+    it('should derive correct address for 1234 (numbers only)', () => {
+      const address = usernameToAddress('1234');
+      expect(address).toBe('1GhSMRUdsgvyoXTF9mVUiFZPPY4Xt68EKS');
+    });
+  });
+
   describe('deterministic property', () => {
     it('should always produce the same address for the same username', () => {
       const addr1 = usernameToAddress('test_user');

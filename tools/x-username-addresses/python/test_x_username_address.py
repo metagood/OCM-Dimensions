@@ -111,6 +111,31 @@ class TestAddressDerivation:
         address = username_to_address('huuep')
         assert address == '1nZpo9Zb84wWDCKAwD2mD8xoUvNAdkD1w'
     
+    def test_cross_implementation_vector_1(self):
+        """Cross-implementation test vector: test_user"""
+        address = username_to_address('test_user')
+        assert address == '1P3KCN8tnhBeHTn6y7VwnjZbfbBFwvX3Ez'
+    
+    def test_cross_implementation_vector_2(self):
+        """Cross-implementation test vector: abcd"""
+        address = username_to_address('abcd')
+        assert address == '1GhdvJx8G98KbkBBZqVQFfYo9oZr8BLEeU'
+    
+    def test_cross_implementation_vector_3(self):
+        """Cross-implementation test vector: aaaaaaaaaaaaaaa (max length)"""
+        address = username_to_address('aaaaaaaaaaaaaaa')
+        assert address == '1LoWsQKDTTcCF4gwVTNiQeXKaXTBDQuEjb'
+    
+    def test_cross_implementation_vector_4(self):
+        """Cross-implementation test vector: ____ (underscores only)"""
+        address = username_to_address('____')
+        assert address == '12Kj8fUtjzte8ddL2Qa5SR1KMmUYQJqY9k'
+    
+    def test_cross_implementation_vector_5(self):
+        """Cross-implementation test vector: 1234 (numbers only)"""
+        address = username_to_address('1234')
+        assert address == '1GhSMRUdsgvyoXTF9mVUiFZPPY4Xt68EKS'
+    
     def test_deterministic(self):
         """Same username always produces same address."""
         addr1 = username_to_address('test_user')

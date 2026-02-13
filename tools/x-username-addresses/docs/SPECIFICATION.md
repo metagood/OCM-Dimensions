@@ -696,6 +696,60 @@ Consider maintaining a **public registry** of known derived addresses:
 
 This is optional (the algorithm is the source of truth), but useful for discovery and indexing.
 
+### 8.7 Network Impact & Bitcoin Economics
+
+#### Permanent UTXO Set Bloat
+
+Every inscription sent to a derived address creates a UTXO that will **never be spent**, contributing to permanent UTXO set bloat that all Bitcoin full nodes must maintain forever.
+
+**Impact at scale:**
+- 1 derived address = 1 permanent UTXO (~70 bytes per UTXO in memory)
+- 1,000 addresses = ~70 KB UTXO set growth
+- 100,000 addresses = ~7 MB UTXO set growth
+- 1,000,000 addresses = ~70 MB UTXO set growth
+
+While individual uses are negligible, widespread adoption creates a measurable externality on the Bitcoin network.
+
+**Current Bitcoin UTXO set:** ~10 GB (as of 2026)
+
+#### Dust Limit & Permanent Value Loss
+
+Bitcoin enforces a **dust limit** of **546 satoshis** minimum per standard UTXO. Every inscription sent requires:
+- Minimum 546 sats as "postage" attached to the inscription UTXO
+- These sats are **permanently burned** (locked forever in an unspendable address)
+
+**Economics at scale:**
+- 1 inscription = 546 sats burned (≈ $0.20 at $40K BTC)
+- 1,000 inscriptions = 546,000 sats burned (≈ $218)
+- 100,000 inscriptions = 54,600,000 sats burned (≈ $21,840)
+- 1,000,000 inscriptions = 546,000,000 sats burned (≈ $218,400)
+
+**Additional considerations:**
+- Inscription content fees (separate from the dust minimum)
+- Transaction fees to broadcast (1-50 sat/vB depending on mempool)
+- If sending multiple inscriptions to the same derived address, each creates a separate UTXO
+
+#### Best Practices for Responsible Use
+
+1. **Batch when possible:** Send multiple items to a single derived address instead of creating new addresses for every inscription
+2. **Document clearly:** Ensure senders understand the permanent nature
+3. **Consider alternatives:** For high-value or liquid assets, use Layer 2 approaches (OAuth attestation, Taproot claims) documented in the alternatives specification
+4. **Monitor impact:** Track how many addresses your project creates
+
+#### Why This Trade-off Might Be Acceptable
+
+- **Social primitive value:** The provably verifiable mapping from username → address creates novel social coordination
+- **Compared to inscriptions generally:** Inscriptions already create permanent on-chain data; this just adds address derivation
+- **Compared to spam:** At least derived addresses have clear semantic meaning vs. arbitrary spam
+- **Self-limiting economics:** 546 sat minimum creates natural economic brake on frivolous use
+
+#### Protocol-Level Mitigations (Future)
+
+If this becomes widely adopted, potential mitigations include:
+- **OP_RETURN variant:** Use OP_RETURN outputs (provably unspendable, pruneable)
+- **Taproot leaf commitments:** More efficient script structures
+- **UTXO consolidation incentives:** Economic mechanisms to encourage cleanup (though impossible with this design)
+
 ---
 
 ## 9. Worked Example

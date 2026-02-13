@@ -43,6 +43,14 @@ Address:  18Sx2KpH3P8LFgYD42PC6X3phZK7vcMY4
 
 ## Quick Start
 
+### Web Tool (Easiest)
+
+**Try it now:** Open `web/index.html` in your browser (no installation needed!)
+
+**Live demo:** [GitHub Pages link coming soon]
+
+**On Bitcoin:** The tool is also available as an inscription for permanent, on-chain access.
+
 ### Python
 
 ```bash

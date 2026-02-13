@@ -13,6 +13,30 @@ This tool implements Grok's canonical algorithm for deriving Bitcoin P2PKH addre
 - ✅ **On-chain Compatible** - Works with Ordinals, Runes, BRC-20
 - ⚠️ **Unspendable** - No private key exists (by design)
 
+## ⚠️ WARNING: Inscriptions Are Permanently Frozen
+
+**READ THIS BEFORE SENDING ANYTHING:**
+
+🔒 **Inscriptions sent to derived addresses CANNOT be transferred, sold, or moved. Ever.**
+
+Any inscription, Rune, or BRC-20 token sent to a derived address is **permanently frozen**. This includes:
+- The inscription itself (cannot be transferred or sold)
+- The UTXO containing the inscription (permanent blockchain bloat)
+- The Bitcoin postage (minimum 546 sats permanently burned per send)
+
+**Use Cases:**
+- ✅ **Trophies/Achievements** - Permanent gifts that prove social connection
+- ✅ **Airdrops** - Community distributions where transferability doesn't matter
+- ✅ **Proof of Receipt** - Social identity verification
+- ❌ **Valuable 1-of-1 Art** - If it might need to be sold/transferred later
+- ❌ **High-Value Assets** - Anything requiring future custody or liquidity
+
+**Network Impact:**
+At scale (100K+ addresses), this creates measurable UTXO set bloat that all Bitcoin nodes must store permanently. Use responsibly.
+
+**You Have Been Warned:**
+This tool implements the algorithm correctly. What you choose to send is your responsibility.
+
 ## Algorithm
 
 ```
@@ -42,6 +66,14 @@ Address:  18Sx2KpH3P8LFgYD42PC6X3phZK7vcMY4
 ```
 
 ## Quick Start
+
+### Web Tool (Easiest)
+
+**Try it now:** Open `web/index.html` in your browser (no installation needed!)
+
+**Live demo:** [GitHub Pages link coming soon]
+
+**On Bitcoin:** The tool is also available as an inscription for permanent, on-chain access.
 
 ### Python
 

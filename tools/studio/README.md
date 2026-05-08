@@ -44,8 +44,12 @@ library, the per-library inscriptions) keep working.
 **Functional fixes**
 
 - WebGL Fluid silently dropped the user's code — both preview and download
-  ran only the bare library. Now the user code is compressed into `td` and
-  evaluated after the fluid library loads, like every other workflow.
+  ran only the bare library. The default template for this workflow is full
+  HTML (canvas + script), so the fix injects the user's HTML via the same
+  `_ocmInjectHtml` flow used by the other HTML workflows (gsap, animejs,
+  Tone.js, Lindenmayer, seedrandom, Chroma.js, plain HTML), then loads the
+  fluid library. The lib auto-attaches to the user's `<canvas>` and any
+  user setup scripts run.
 - The p5.js preview only worked when the user wrote a literal
   `new p5(function(p) {...})`. Any other instantiation form (arrow, named
   reference, class) made the regex extractor fall back to the wrapper, which

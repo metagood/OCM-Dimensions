@@ -1312,19 +1312,20 @@ ${RUNTIME_INJECTOR}
 })();
 <\/script></body></html>`;
   } else if(lib === 'webglFluid') {
-    // FIX: previously dropped user code entirely. Now we run it after the lib loads.
+    // The webglFluid template's user code is full HTML (canvas + script).
+    // Inject the user HTML first so the canvas is in the DOM, then load the
+    // fluid lib which auto-attaches to the first canvas it finds.
     return `<!DOCTYPE html>
 <html><head><meta http-equiv="Content-Security-Policy" content="default-src ${fetchBase}/content/ ${fetchBase}/r/ 'unsafe-eval' 'unsafe-inline' data: blob:"><base href="${fetchBase}/content/"><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head>
 <body>
-<canvas></canvas>
 <script>
 ${RUNTIME_INJECTOR}
 (async function(){
   const ocmR=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
   (0,eval)((await ocmR.text()).split("\\n")[28]); // fflate (parity)
+  _ocmInjectHtml(${_safeJson(code)});
   const r=await fetch('${fetchBase}/content/${INSCRIPTIONS.webglFluid}');
   (0,eval)(await r.text());
-  (0,eval)(${_safeJson(code)});
 })();
 <\/script>
 </body></html>`;
@@ -1487,24 +1488,26 @@ const userCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob
 }catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading. Check console.</pre>';}})();
 <\/script></body></html>`;
   } else if(lib === 'webglFluid') {
-    // FIX: previously dropped user code. Now compress+decompress+eval just like other libs.
-    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head><body>
-<canvas></canvas>
-<script>
+    // webglFluid user code is full HTML (canvas + script). Inject it first
+    // so the canvas exists in the DOM, then load the fluid lib which
+    // auto-attaches to the first canvas it finds.
+    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head><body><script>
 const _dbg=new URLSearchParams(location.search).has('debug');
 const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 let td='${base64}';
+${RUNTIME_INJECTOR}
 (async function(){
 try{
+_log('Fetching fflate...');
+const fr=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
+(0,eval)((await fr.text()).split("\\n")[28]);
+_log('Decompressing user HTML...');
+const userHtml=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
+_ocmInjectHtml(userHtml);
 _log('Fetching WebGL Fluid...');
 const r=await fetch(\`/content/${INSCRIPTIONS.webglFluid}\`);
 if(!r.ok)throw new Error('Fetch failed: '+r.status);
 (0,eval)(await r.text());
-_log('Fetching fflate...');
-const fr=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
-(0,eval)((await fr.text()).split("\\n")[28]);
-const userCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
-(0,eval)(userCode);
 }catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading WebGL Fluid. Check console.</pre>';}})();
 <\/script></body></html>`;
   } else if(lib === 'gsap' || lib === 'animejs' || lib === 'tonejs' || lib === 'lindenmayer' || lib === 'seedrandom' || lib === 'chroma') {

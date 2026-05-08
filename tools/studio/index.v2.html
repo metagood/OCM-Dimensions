@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OCM Dimensions Studio v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--accent:#58a6ff;--green:#3fb950;--yellow:#d29922;--red:#f85149}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:16px;font-weight:600;color:var(--text)}
+header h1 span{color:var(--accent)}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,button{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer}
+select:hover,button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{background:#4c9aed}
+main{flex:1;display:flex;overflow:hidden}
+.panel{flex:1;display:flex;flex-direction:column;min-width:0}
+.panel-header{background:var(--bg2);padding:8px 12px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.editor-wrap{flex:1;position:relative;overflow:hidden}
+#editor{width:100%;height:100%;background:var(--bg);color:var(--text);border:none;resize:none;padding:12px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:13px;line-height:1.5;tab-size:2;outline:none}
+.divider{width:1px;background:var(--border);cursor:col-resize}
+.preview-wrap{flex:1;background:#000;position:relative}
+#preview{width:100%;height:100%;border:none;background:#000}
+.preview-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text2);font-size:14px;pointer-events:none}
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13px}
+.size-info{display:flex;gap:16px;flex-wrap:wrap}
+.size-item{display:flex;gap:6px;align-items:center}
+.size-item label{color:var(--text2)}
+.size-item span{font-weight:500}
+.size-badge{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.size-badge.good{background:rgba(63,185,80,0.2);color:var(--green)}
+.size-badge.warn{background:rgba(210,153,34,0.2);color:var(--yellow)}
+.size-badge.bad{background:rgba(248,81,73,0.2);color:var(--red)}
+.cost-info{margin-left:auto;color:var(--text2);display:flex;align-items:center;gap:6px}
+.cost-info strong{color:var(--text)}
+.fee-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:3px 6px;border-radius:4px;width:56px;font-size:12px;text-align:right;-moz-appearance:textfield}
+.fee-input::-webkit-outer-spin-button,.fee-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.fee-input:hover,.fee-input:focus{border-color:var(--accent);outline:none}
+.templates{display:none;position:absolute;top:100%;left:0;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px;z-index:100;min-width:200px}
+.templates.show{display:block}
+.templates button{display:block;width:100%;text-align:left;border:none;background:none;padding:8px 12px;border-radius:4px}
+.templates button:hover{background:var(--bg3)}
+.error-banner{background:rgba(248,81,73,0.1);border:1px solid var(--red);color:var(--red);padding:8px 12px;margin:8px;border-radius:6px;font-size:12px;display:none}
+.loading{color:var(--text2);padding:20px;text-align:center}
+@media(max-width:768px){main{flex-direction:column}.divider{width:100%;height:1px;cursor:row-resize}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>OCM <span>Dimensions</span> Studio <span style="font-size:11px;color:var(--text2)">v2</span></h1>
+  <div class="controls">
+    <select id="librarySelect">
+      <option value="threejs">Three.js</option>
+      <option value="p5js">p5.js</option>
+      <option value="html">Plain HTML</option>
+      <option value="matterjs">Matter.js (Physics)</option>
+      <option value="webglFluid">WebGL Fluid</option>
+      <option value="gsap">GSAP (Animation)</option>
+      <option value="animejs">anime.js (Animation)</option>
+      <option value="tonejs">Tone.js (Audio)</option>
+      <option value="lindenmayer">Lindenmayer (L-Systems)</option>
+      <option value="seedrandom">seedrandom</option>
+      <option value="chroma">Chroma.js (Color)</option>
+    </select>
+    <div style="position:relative">
+      <button id="templateBtn">Templates ▾</button>
+      <div class="templates" id="templateMenu"></div>
+    </div>
+    <button onclick="runPreview()">▶ Run</button>
+    <button class="primary" onclick="downloadInscription()">⬇ Download</button>
+  </div>
+</header>
+
+<div class="error-banner" id="errorBanner"></div>
+
+<main>
+  <div class="panel">
+    <div class="panel-header">
+      <span>Code</span>
+      <span id="charCount">0 chars</span>
+    </div>
+    <div class="editor-wrap">
+      <textarea id="editor" spellcheck="false" placeholder="Write your code here..."></textarea>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="panel">
+    <div class="panel-header">
+      <span>Preview</span>
+      <label><input type="checkbox" id="autoRun" checked> Auto-run</label>
+    </div>
+    <div class="preview-wrap">
+      <iframe id="preview" sandbox="allow-scripts"></iframe>
+      <div class="preview-overlay" id="previewOverlay">Press ▶ Run or enable Auto-run</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="size-info">
+    <div class="size-item"><label>Original:</label><span id="sizeOriginal">0 B</span></div>
+    <div class="size-item"><label>Compressed:</label><span id="sizeCompressed">0 B</span></div>
+    <div class="size-item"><label>Final HTML:</label><span id="sizeFinal">0 B</span></div>
+    <span class="size-badge good" id="sizeBadge">-</span>
+  </div>
+  <div class="cost-info">
+    Fee: <input type="number" id="feeRate" class="fee-input" value="1" min="1" step="1" title="sats per vByte"> sat/vB
+    &nbsp;Est. cost: <strong id="costEstimate">-</strong> <span id="costSats"></span> <span id="vBytesInfo" style="opacity:0.6"></span>
+  </div>
+</footer>
+
+<script>
+// Inscription IDs for recursive loading
+const INSCRIPTIONS = {
+  fflateCompress: 'f815bd5c566c6e46de5cdb6ccb3a7043c63deeba61f4234baea84b602b0d4440i0',
+  ocmDimensions: '2dbdf9ebbec6be793fd16ae9b797c7cf968ab2427166aaf390b90b71778266abi0',
+  p5js: '255ce0c5a0d8aca39510da72e604ef8837519028827ba7b7f723b7489f3ec3a4i0',
+  // Additional libraries from Ordinal Public Goods
+  matterjs: '9d567e6ef8bd6b13458cc67cc5e8339395a4433e45db4554ff83c88a5df8bae2i0',
+  webglFluid: '3af8500b444c7f589fca666fe317e1f95c7226d49dc23f8a4b86093f01f3e7adi0',
+  gsap: '6577ec768235a2a911e91a115b964618581bde91d99bc58f5c7390fdfb155ae6i0',
+  animejs: '23ad98a190933e5c238b57e05814acc154d55928edf02d298cc82f4fac0313fei0',
+  tonejs: '44740a1f30efb247ef41de3355133e12d6f58ab4dc8a3146648e2249fa9c6a39i0',
+  lindenmayer: 'd4a4ba1085a481528e2f8ace9ad4d869adcc295aeeb2dbea56b65224b137a56ci0',
+  seedrandom: 'c192f63c1990ee1377d51de1f5b6820eac412aa779d717b9497806a072ea49f6i0',
+  chroma: 'c49f28a5c9e67efb85d44b9ee12efa2839b0251bad14efc5e6c32406505e259ci0'
+};
+
+// Templates
+const TEMPLATES = {
+  threejs: [
+    { name: 'Rotating Cube', code: `// THREE is loaded for you. Write top-level code.
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1a2e);
+
+const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({antialias: true});
+renderer.setSize(innerWidth, innerHeight);
+document.getElementById('scene').appendChild(renderer.domElement);
+
+const geometry = new THREE.BoxGeometry(2, 2, 2);
+const material = new THREE.MeshNormalMaterial();
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
+
+onresize = () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+};
+
+(function animate() {
+  requestAnimationFrame(animate);
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
+  renderer.render(scene, camera);
+})();` },
+    { name: 'Particle Cloud', code: `// THREE is loaded for you. Write top-level code.
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
+camera.position.z = 50;
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(innerWidth, innerHeight);
+document.getElementById('scene').appendChild(renderer.domElement);
+
+const particles = 2000;
+const positions = new Float32Array(particles * 3);
+const colors = new Float32Array(particles * 3);
+
+for(let i = 0; i < particles * 3; i += 3) {
+  positions[i] = (Math.random() - 0.5) * 100;
+  positions[i+1] = (Math.random() - 0.5) * 100;
+  positions[i+2] = (Math.random() - 0.5) * 100;
+  colors[i] = Math.random();
+  colors[i+1] = Math.random();
+  colors[i+2] = Math.random();
+}
+
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const mat = new THREE.PointsMaterial({size: 0.5, vertexColors: true});
+const points = new THREE.Points(geo, mat);
+scene.add(points);
+
+onresize = () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+};
+
+(function animate() {
+  requestAnimationFrame(animate);
+  points.rotation.x += 0.001;
+  points.rotation.y += 0.002;
+  renderer.render(scene, camera);
+})();` },
+    { name: 'Wireframe Sphere', code: `// THREE is loaded for you. Write top-level code.
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000020);
+
+const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
+camera.position.z = 3;
+
+const renderer = new THREE.WebGLRenderer({antialias: true});
+renderer.setSize(innerWidth, innerHeight);
+document.getElementById('scene').appendChild(renderer.domElement);
+
+const geo = new THREE.IcosahedronGeometry(1.5, 3);
+const mat = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
+const sphere = new THREE.Mesh(geo, mat);
+scene.add(sphere);
+
+const originalPos = geo.attributes.position.array.slice();
+let t = 0;
+
+onresize = () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+};
+
+(function animate() {
+  requestAnimationFrame(animate);
+  t += 0.02;
+  const pos = geo.attributes.position.array;
+  for(let i = 0; i < pos.length; i += 3) {
+    const x = originalPos[i], y = originalPos[i+1], z = originalPos[i+2];
+    const noise = Math.sin(x*3+t) * Math.sin(y*3+t) * Math.sin(z*3+t) * 0.15;
+    const len = Math.sqrt(x*x + y*y + z*z);
+    const scale = (1 + noise) / len;
+    pos[i] = x * scale;
+    pos[i+1] = y * scale;
+    pos[i+2] = z * scale;
+  }
+  geo.attributes.position.needsUpdate = true;
+  sphere.rotation.y += 0.005;
+  renderer.render(scene, camera);
+})();` }
+  ],
+  p5js: [
+    { name: 'Circle Pattern', code: `// p5 is loaded for you. Just write new p5(...).
+new p5(function(p) {
+  p.setup = function() {
+    p.createCanvas(p.windowWidth, p.windowHeight);
+    p.colorMode(p.HSB, 360, 100, 100, 100);
+  };
+
+  p.draw = function() {
+    p.background(0, 0, 10, 10);
+    for(let i = 0; i < 50; i++) {
+      const angle = p.frameCount * 0.02 + i * 0.2;
+      const radius = 100 + i * 5;
+      const x = p.width/2 + Math.cos(angle) * radius;
+      const y = p.height/2 + Math.sin(angle) * radius;
+      p.noStroke();
+      p.fill((i * 7 + p.frameCount) % 360, 80, 90, 50);
+      p.circle(x, y, 20 + i * 0.5);
+    }
+  };
+
+  p.windowResized = function() {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+  };
+});` },
+    { name: 'Flow Field', code: `// p5 is loaded for you. Just write new p5(...).
+new p5(function(p) {
+  let cols, rows, scale = 20, zoff = 0;
+
+  p.setup = function() {
+    p.createCanvas(p.windowWidth, p.windowHeight);
+    cols = p.floor(p.width / scale);
+    rows = p.floor(p.height / scale);
+    p.colorMode(p.HSB, 360, 100, 100);
+    p.background(0);
+  };
+
+  p.draw = function() {
+    p.background(0, 0, 0, 5);
+    let yoff = 0;
+    for(let y = 0; y < rows; y++) {
+      let xoff = 0;
+      for(let x = 0; x < cols; x++) {
+        const angle = p.noise(xoff, yoff, zoff) * p.TWO_PI * 2;
+        const hue = (p.noise(xoff, yoff, zoff + 100) * 360 + p.frameCount * 0.5) % 360;
+        p.push();
+        p.translate(x * scale + scale/2, y * scale + scale/2);
+        p.rotate(angle);
+        p.stroke(hue, 80, 90);
+        p.strokeWeight(1);
+        p.line(0, 0, scale * 0.8, 0);
+        p.pop();
+        xoff += 0.1;
+      }
+      yoff += 0.1;
+    }
+    zoff += 0.003;
+  };
+});` }
+  ],
+  html: [
+    { name: 'Canvas Animation', code: `<!DOCTYPE html>
+<html>
+<head>
+<style>body{margin:0;overflow:hidden}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+resize();
+onresize = resize;
+
+const particles = [];
+for(let i = 0; i < 100; i++) {
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() - 0.5) * 2,
+    r: Math.random() * 3 + 1
+  });
+}
+
+(function animate() {
+  ctx.fillStyle = 'rgba(0,0,20,0.1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#4ecdc4';
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(animate);
+})();
+<\/script>
+</body>
+</html>` }
+  ],
+  matterjs: [
+    { name: 'Falling Shapes', code: `// Matter.js physics simulation
+const { Engine, Render, World, Bodies, Mouse, MouseConstraint } = Matter;
+
+const engine = Engine.create();
+const render = Render.create({
+  element: document.body,
+  engine: engine,
+  options: {
+    width: innerWidth,
+    height: innerHeight,
+    wireframes: false,
+    background: '#0a0a1a'
+  }
+});
+
+// Ground and walls
+const ground = Bodies.rectangle(innerWidth/2, innerHeight+25, innerWidth, 50, { isStatic: true, render: { fillStyle: '#333' } });
+const leftWall = Bodies.rectangle(-25, innerHeight/2, 50, innerHeight, { isStatic: true });
+const rightWall = Bodies.rectangle(innerWidth+25, innerHeight/2, 50, innerHeight, { isStatic: true });
+World.add(engine.world, [ground, leftWall, rightWall]);
+
+// Random shapes
+const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9'];
+for(let i = 0; i < 30; i++) {
+  const x = Math.random() * innerWidth;
+  const y = Math.random() * -500;
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  const shape = Math.random() > 0.5
+    ? Bodies.circle(x, y, 20 + Math.random() * 30, { render: { fillStyle: color } })
+    : Bodies.rectangle(x, y, 30 + Math.random() * 40, 30 + Math.random() * 40, { render: { fillStyle: color } });
+  World.add(engine.world, shape);
+}
+
+// Mouse interaction
+const mouse = Mouse.create(render.canvas);
+const mouseConstraint = MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.2, render: { visible: false } } });
+World.add(engine.world, mouseConstraint);
+
+Engine.run(engine);
+Render.run(render);
+
+onresize = () => location.reload();` },
+    { name: 'Newton Cradle', code: `// Newton's Cradle with Matter.js
+const { Engine, Render, World, Bodies, Composites, Constraint, Mouse, MouseConstraint } = Matter;
+
+const engine = Engine.create();
+const render = Render.create({
+  element: document.body,
+  engine: engine,
+  options: {
+    width: innerWidth,
+    height: innerHeight,
+    wireframes: false,
+    background: '#1a1a2e'
+  }
+});
+
+const cradle = Composites.newtonsCradle(innerWidth/2 - 150, 100, 5, 30, 200);
+World.add(engine.world, cradle);
+
+// Pull first ball
+Matter.Body.translate(cradle.bodies[0], { x: -140, y: -100 });
+
+const mouse = Mouse.create(render.canvas);
+const mouseConstraint = MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.2, render: { visible: false } } });
+World.add(engine.world, mouseConstraint);
+
+Engine.run(engine);
+Render.run(render);` }
+  ],
+  webglFluid: [
+    { name: 'Interactive Fluid', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; overflow: hidden; }
+canvas { width: 100vw; height: 100vh; display: block; }
+</style></head><body>
+<canvas></canvas>
+<script>
+// WebGL Fluid auto-initializes when it finds a canvas element
+// Move mouse or touch to create fluid motion
+// The simulation runs automatically
+<\/script></body></html>` }
+  ],
+  gsap: [
+    { name: 'Morphing Shapes', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #0f0f23; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+.shape { width: 100px; height: 100px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); border-radius: 10px; }
+</style></head><body>
+<div class="shape"></div>
+<script>
+const shape = document.querySelector('.shape');
+
+gsap.to(shape, {
+  duration: 2,
+  scale: 2,
+  rotation: 360,
+  borderRadius: '50%',
+  background: 'linear-gradient(45deg, #a29bfe, #fd79a8)',
+  repeat: -1,
+  yoyo: true,
+  ease: 'power2.inOut'
+});
+
+gsap.to(shape, {
+  duration: 3,
+  x: 'random(-200, 200)',
+  y: 'random(-150, 150)',
+  repeat: -1,
+  repeatRefresh: true,
+  ease: 'power1.inOut'
+});
+<\/script></body></html>` },
+    { name: 'Staggered Grid', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+.grid { display: grid; grid-template-columns: repeat(10, 40px); gap: 8px; }
+.box { width: 40px; height: 40px; background: #4ecdc4; border-radius: 4px; }
+</style></head><body>
+<div class="grid"></div>
+<script>
+const grid = document.querySelector('.grid');
+for(let i = 0; i < 100; i++) {
+  const box = document.createElement('div');
+  box.className = 'box';
+  grid.appendChild(box);
+}
+
+gsap.from('.box', {
+  duration: 0.8,
+  scale: 0,
+  opacity: 0,
+  rotation: 180,
+  stagger: {
+    grid: [10, 10],
+    from: 'center',
+    amount: 1.5
+  },
+  ease: 'back.out(1.7)',
+  repeat: -1,
+  repeatDelay: 1
+});
+<\/script></body></html>` }
+  ],
+  animejs: [
+    { name: 'Particle Burst', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #0f0f23; overflow: hidden; }
+.particle { position: absolute; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; }
+</style></head><body>
+<script>
+function createBurst(x, y) {
+  const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffeaa7', '#a29bfe', '#fd79a8'];
+  for(let i = 0; i < 30; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = x + 'px';
+    particle.style.top = y + 'px';
+    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+    document.body.appendChild(particle);
+
+    anime({
+      targets: particle,
+      translateX: anime.random(-200, 200),
+      translateY: anime.random(-200, 200),
+      scale: [1, 0],
+      opacity: [1, 0],
+      duration: 1000 + Math.random() * 500,
+      easing: 'easeOutExpo',
+      complete: () => particle.remove()
+    });
+  }
+}
+
+document.addEventListener('click', e => createBurst(e.clientX, e.clientY));
+
+// Auto burst
+setInterval(() => {
+  createBurst(Math.random() * innerWidth, Math.random() * innerHeight);
+}, 800);
+<\/script></body></html>` },
+    { name: 'SVG Path Draw', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
+svg { width: 400px; height: 400px; }
+path { fill: none; stroke: #4ecdc4; stroke-width: 2; }
+</style></head><body>
+<svg viewBox="0 0 100 100">
+  <path d="M50 10 L90 90 L10 90 Z" class="triangle"/>
+  <path d="M50 25 A25 25 0 1 1 50 75 A25 25 0 1 1 50 25" class="circle"/>
+</svg>
+<script>
+anime({
+  targets: 'path',
+  strokeDashoffset: [anime.setDashoffset, 0],
+  easing: 'easeInOutSine',
+  duration: 2000,
+  delay: (el, i) => i * 500,
+  loop: true,
+  direction: 'alternate'
+});
+<\/script></body></html>` }
+  ],
+  tonejs: [
+    { name: 'Interactive Synth', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #0f0f23; color: #fff; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+.keys { display: flex; gap: 4px; }
+.key { width: 60px; height: 180px; background: #fff; border-radius: 0 0 8px 8px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; color: #333; font-weight: bold; }
+.key.black { width: 40px; height: 120px; background: #333; color: #fff; margin: 0 -22px; z-index: 1; }
+.key:active, .key.active { background: #4ecdc4; }
+h1 { margin-bottom: 30px; color: #4ecdc4; }
+p { margin-top: 20px; color: #666; }
+</style></head><body>
+<h1>Web Synth</h1>
+<div class="keys">
+  <div class="key" data-note="C4">C</div>
+  <div class="key black" data-note="C#4">C#</div>
+  <div class="key" data-note="D4">D</div>
+  <div class="key black" data-note="D#4">D#</div>
+  <div class="key" data-note="E4">E</div>
+  <div class="key" data-note="F4">F</div>
+  <div class="key black" data-note="F#4">F#</div>
+  <div class="key" data-note="G4">G</div>
+  <div class="key black" data-note="G#4">G#</div>
+  <div class="key" data-note="A4">A</div>
+  <div class="key black" data-note="A#4">A#</div>
+  <div class="key" data-note="B4">B</div>
+</div>
+<p>Click keys or press A-L to play</p>
+<script>
+const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+const keys = document.querySelectorAll('.key');
+const keyMap = { a:'C4', w:'C#4', s:'D4', e:'D#4', d:'E4', f:'F4', t:'F#4', g:'G4', y:'G#4', h:'A4', u:'A#4', j:'B4' };
+
+keys.forEach(key => {
+  key.addEventListener('mousedown', () => {
+    Tone.start();
+    synth.triggerAttack(key.dataset.note);
+    key.classList.add('active');
+  });
+  key.addEventListener('mouseup', () => {
+    synth.triggerRelease(key.dataset.note);
+    key.classList.remove('active');
+  });
+  key.addEventListener('mouseleave', () => {
+    synth.triggerRelease(key.dataset.note);
+    key.classList.remove('active');
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if(keyMap[e.key] && !e.repeat) {
+    Tone.start();
+    synth.triggerAttack(keyMap[e.key]);
+    document.querySelector(\`[data-note="\${keyMap[e.key]}"]\`)?.classList.add('active');
+  }
+});
+document.addEventListener('keyup', e => {
+  if(keyMap[e.key]) {
+    synth.triggerRelease(keyMap[e.key]);
+    document.querySelector(\`[data-note="\${keyMap[e.key]}"]\`)?.classList.remove('active');
+  }
+});
+<\/script></body></html>` },
+    { name: 'Generative Ambient', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #0a0a1a; color: #fff; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+button { padding: 20px 40px; font-size: 18px; background: #4ecdc4; border: none; border-radius: 8px; cursor: pointer; margin: 10px; }
+button:hover { background: #45b7d1; }
+#status { color: #4ecdc4; margin-top: 20px; }
+</style></head><body>
+<h1>Generative Ambient</h1>
+<button id="start">Start</button>
+<button id="stop">Stop</button>
+<div id="status">Click Start to begin</div>
+<script>
+const reverb = new Tone.Reverb({ decay: 8, wet: 0.7 }).toDestination();
+const synth = new Tone.PolySynth(Tone.Synth, {
+  oscillator: { type: 'sine' },
+  envelope: { attack: 2, decay: 1, sustain: 0.5, release: 4 }
+}).connect(reverb);
+synth.volume.value = -12;
+
+const notes = ['C3', 'E3', 'G3', 'B3', 'D4', 'F#4', 'A4', 'C5', 'E5'];
+let playing = false;
+let loop;
+
+document.getElementById('start').onclick = async () => {
+  await Tone.start();
+  if(playing) return;
+  playing = true;
+  document.getElementById('status').textContent = 'Playing...';
+
+  loop = new Tone.Loop(time => {
+    const note = notes[Math.floor(Math.random() * notes.length)];
+    synth.triggerAttackRelease(note, '2n', time);
+  }, '2n').start(0);
+
+  Tone.Transport.start();
+};
+
+document.getElementById('stop').onclick = () => {
+  playing = false;
+  Tone.Transport.stop();
+  if(loop) loop.dispose();
+  document.getElementById('status').textContent = 'Stopped';
+};
+<\/script></body></html>` }
+  ],
+  lindenmayer: [
+    { name: 'Fractal Tree', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #0a0a1a; display: flex; justify-content: center; align-items: flex-end; height: 100vh; overflow: hidden; }
+canvas { display: block; }
+</style></head><body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+const lsystem = new LSystem({
+  axiom: 'X',
+  productions: {
+    'X': 'F+[[X]-X]-F[-FX]+X',
+    'F': 'FF'
+  },
+  forceObjects: true
+});
+
+lsystem.iterate(6);
+const result = lsystem.getString();
+
+ctx.translate(canvas.width / 2, canvas.height);
+ctx.strokeStyle = '#4ecdc4';
+ctx.lineWidth = 1;
+
+const len = 4;
+const angle = 25 * Math.PI / 180;
+const stack = [];
+
+ctx.beginPath();
+for(const char of result) {
+  switch(char) {
+    case 'F':
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -len);
+      ctx.translate(0, -len);
+      break;
+    case '+': ctx.rotate(angle); break;
+    case '-': ctx.rotate(-angle); break;
+    case '[': stack.push(ctx.getTransform()); break;
+    case ']':
+      ctx.setTransform(stack.pop());
+      break;
+  }
+}
+ctx.stroke();
+<\/script></body></html>` },
+    { name: 'Dragon Curve', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+canvas { display: block; }
+</style></head><body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+const lsystem = new LSystem({
+  axiom: 'FX',
+  productions: {
+    'X': 'X+YF+',
+    'Y': '-FX-Y'
+  },
+  forceObjects: true
+});
+
+lsystem.iterate(14);
+const result = lsystem.getString();
+
+ctx.translate(canvas.width / 2 - 100, canvas.height / 2 + 100);
+ctx.strokeStyle = '#ff6b6b';
+ctx.lineWidth = 1;
+
+const len = 4;
+const angle = 90 * Math.PI / 180;
+
+ctx.beginPath();
+ctx.moveTo(0, 0);
+for(const char of result) {
+  switch(char) {
+    case 'F':
+      ctx.lineTo(0, -len);
+      ctx.translate(0, -len);
+      break;
+    case '+': ctx.rotate(angle); break;
+    case '-': ctx.rotate(-angle); break;
+  }
+}
+ctx.stroke();
+<\/script></body></html>` }
+  ],
+  seedrandom: [
+    { name: 'Deterministic Art', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #0f0f23; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
+canvas { display: block; border: 1px solid #333; }
+input { margin: 20px; padding: 10px; font-size: 16px; background: #1a1a2e; border: 1px solid #4ecdc4; color: #fff; border-radius: 4px; }
+p { color: #666; }
+</style></head><body>
+<input id="seed" type="text" placeholder="Enter seed..." value="hello">
+<canvas id="c" width="400" height="400"></canvas>
+<p>Same seed = same artwork</p>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const seedInput = document.getElementById('seed');
+
+function draw(seed) {
+  const rng = new Math.seedrandom(seed);
+  ctx.fillStyle = '#0f0f23';
+  ctx.fillRect(0, 0, 400, 400);
+
+  for(let i = 0; i < 50; i++) {
+    const x = rng() * 400;
+    const y = rng() * 400;
+    const r = rng() * 40 + 10;
+    const hue = rng() * 360;
+
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = \`hsla(\${hue}, 70%, 60%, 0.6)\`;
+    ctx.fill();
+  }
+
+  for(let i = 0; i < 20; i++) {
+    ctx.beginPath();
+    ctx.moveTo(rng() * 400, rng() * 400);
+    ctx.lineTo(rng() * 400, rng() * 400);
+    ctx.strokeStyle = \`hsla(\${rng() * 360}, 70%, 70%, 0.5)\`;
+    ctx.lineWidth = rng() * 3 + 1;
+    ctx.stroke();
+  }
+}
+
+draw(seedInput.value);
+seedInput.addEventListener('input', () => draw(seedInput.value));
+<\/script></body></html>` },
+    { name: 'Reproducible Grid', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; }
+</style></head><body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const size = Math.min(innerWidth, innerHeight) - 40;
+canvas.width = canvas.height = size;
+
+// Using transaction hash as seed makes each inscription unique but deterministic
+const seed = 'inscription-seed-123';
+const rng = new Math.seedrandom(seed);
+
+const grid = 20;
+const cellSize = size / grid;
+
+for(let y = 0; y < grid; y++) {
+  for(let x = 0; x < grid; x++) {
+    const pattern = Math.floor(rng() * 4);
+    const hue = rng() * 60 + 180; // Blue-green range
+    ctx.fillStyle = \`hsl(\${hue}, 60%, 50%)\`;
+
+    ctx.save();
+    ctx.translate(x * cellSize + cellSize/2, y * cellSize + cellSize/2);
+    ctx.rotate(Math.floor(rng() * 4) * Math.PI / 2);
+
+    ctx.beginPath();
+    switch(pattern) {
+      case 0: // Quarter circle
+        ctx.arc(-cellSize/2, -cellSize/2, cellSize, 0, Math.PI/2);
+        ctx.lineTo(-cellSize/2, -cellSize/2);
+        break;
+      case 1: // Triangle
+        ctx.moveTo(-cellSize/2, -cellSize/2);
+        ctx.lineTo(cellSize/2, -cellSize/2);
+        ctx.lineTo(-cellSize/2, cellSize/2);
+        break;
+      case 2: // Half circle
+        ctx.arc(0, -cellSize/2, cellSize/2, 0, Math.PI);
+        break;
+      case 3: // Square
+        ctx.rect(-cellSize/4, -cellSize/4, cellSize/2, cellSize/2);
+        break;
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+}
+<\/script></body></html>` }
+  ],
+  chroma: [
+    { name: 'Color Scales', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #0f0f23; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; gap: 20px; }
+.scale { display: flex; height: 60px; width: 80vw; border-radius: 8px; overflow: hidden; }
+.scale div { flex: 1; }
+h3 { color: #fff; margin: 10px 0 5px; font-family: system-ui; }
+</style></head><body>
+<h3>Viridis</h3>
+<div class="scale" id="viridis"></div>
+<h3>Plasma</h3>
+<div class="scale" id="plasma"></div>
+<h3>Custom (Blue to Pink)</h3>
+<div class="scale" id="custom"></div>
+<h3>Diverging (Cool to Warm)</h3>
+<div class="scale" id="diverging"></div>
+<script>
+function renderScale(id, scale) {
+  const container = document.getElementById(id);
+  for(let i = 0; i < 50; i++) {
+    const div = document.createElement('div');
+    div.style.background = scale(i / 49).hex();
+    container.appendChild(div);
+  }
+}
+
+renderScale('viridis', chroma.scale('viridis'));
+renderScale('plasma', chroma.scale(['#0d0887', '#7e03a8', '#cc4778', '#f89540', '#f0f921']));
+renderScale('custom', chroma.scale(['#4ecdc4', '#a29bfe', '#fd79a8']).mode('lab'));
+renderScale('diverging', chroma.scale(['#4575b4', '#ffffbf', '#d73027']).mode('lab'));
+<\/script></body></html>` },
+    { name: 'Interactive Palette', code: `<!DOCTYPE html>
+<html><head><style>
+body { margin: 0; background: #1a1a2e; color: #fff; font-family: system-ui; padding: 40px; }
+.palette { display: flex; height: 120px; border-radius: 12px; overflow: hidden; margin: 20px 0; }
+.swatch { flex: 1; display: flex; align-items: flex-end; justify-content: center; padding: 10px; font-size: 12px; cursor: pointer; }
+.controls { display: flex; gap: 20px; margin: 20px 0; }
+input[type="color"] { width: 60px; height: 40px; border: none; cursor: pointer; }
+select, input[type="range"] { padding: 8px; background: #2d2d44; border: 1px solid #4ecdc4; color: #fff; border-radius: 4px; }
+</style></head><body>
+<h1>Palette Generator</h1>
+<div class="controls">
+  <label>Base: <input type="color" id="base" value="#4ecdc4"></label>
+  <label>Mode: <select id="mode">
+    <option value="analogous">Analogous</option>
+    <option value="complementary">Complementary</option>
+    <option value="triadic">Triadic</option>
+    <option value="tetradic">Tetradic</option>
+  </select></label>
+  <label>Colors: <input type="range" id="count" min="3" max="9" value="5"></label>
+</div>
+<div class="palette" id="palette"></div>
+<script>
+function generate() {
+  const base = chroma(document.getElementById('base').value);
+  const mode = document.getElementById('mode').value;
+  const count = +document.getElementById('count').value;
+  const palette = document.getElementById('palette');
+  palette.innerHTML = '';
+
+  let colors = [];
+  const hue = base.get('hsl.h');
+
+  switch(mode) {
+    case 'analogous':
+      for(let i = 0; i < count; i++) colors.push(chroma.hsl((hue + (i - count/2) * 20) % 360, 0.7, 0.6));
+      break;
+    case 'complementary':
+      colors = chroma.scale([base, chroma.hsl((hue + 180) % 360, 0.7, 0.6)]).colors(count).map(c => chroma(c));
+      break;
+    case 'triadic':
+      colors = [0, 120, 240].flatMap(offset => chroma.scale([chroma.hsl((hue + offset) % 360, 0.7, 0.5), chroma.hsl((hue + offset) % 360, 0.7, 0.7)]).colors(Math.ceil(count/3)).map(c => chroma(c)));
+      colors = colors.slice(0, count);
+      break;
+    case 'tetradic':
+      colors = [0, 90, 180, 270].map(offset => chroma.hsl((hue + offset) % 360, 0.7, 0.6));
+      if(count > 4) colors = chroma.scale(colors).colors(count).map(c => chroma(c));
+      break;
+  }
+
+  colors.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'swatch';
+    div.style.background = c.hex();
+    div.style.color = c.luminance() > 0.5 ? '#000' : '#fff';
+    div.textContent = c.hex();
+    div.onclick = () => navigator.clipboard.writeText(c.hex());
+    palette.appendChild(div);
+  });
+}
+
+generate();
+document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', generate));
+<\/script></body></html>` }
+  ]
+};
+
+// State
+let fflateLoaded = false;
+let fflateLib = null;
+let debounceTimer = null;
+
+// Base URL for /content/ - empty when on-chain, ordinals.com when local
+const isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const contentBase = isLocal ? 'https://ordinals.com' : '';
+
+// DOM elements
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
+const previewOverlay = document.getElementById('previewOverlay');
+const librarySelect = document.getElementById('librarySelect');
+const templateBtn = document.getElementById('templateBtn');
+const templateMenu = document.getElementById('templateMenu');
+const autoRunCheckbox = document.getElementById('autoRun');
+const errorBanner = document.getElementById('errorBanner');
+const feeRateInput = document.getElementById('feeRate');
+
+// Initialize
+async function init() {
+  // Load template immediately (doesn't need fflate)
+  updateTemplateMenu();
+  loadTemplate(TEMPLATES.threejs[0]);
+
+  // Set up event listeners
+  editor.addEventListener('input', onEditorChange);
+  librarySelect.addEventListener('change', () => {
+    updateTemplateMenu();
+    const templates = TEMPLATES[librarySelect.value];
+    if(templates && templates[0]) loadTemplate(templates[0]);
+  });
+
+  templateBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    templateMenu.classList.toggle('show');
+  });
+  document.addEventListener('click', () => templateMenu.classList.remove('show'));
+
+  // Recompute cost when fee rate changes
+  feeRateInput.addEventListener('input', updateSizeInfo);
+
+  // Load fflate in background (needed for size calc and download)
+  await loadFflate();
+}
+
+// Load full fflate for compression (size calc + download)
+async function loadFflate() {
+  try {
+    const resp = await fetch(`${contentBase}/content/${INSCRIPTIONS.fflateCompress}`);
+    if(!resp.ok) throw new Error('Fetch failed: ' + resp.status);
+    const code = await resp.text();
+    // ES module - import via blob URL
+    const blob = new Blob([code], {type: 'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    const module = await import(url);
+    URL.revokeObjectURL(url);
+    fflateLib = module;
+    // Check if we have compression support (gzipSync)
+    if(fflateLib && typeof fflateLib.gzipSync === 'function') {
+      fflateLoaded = true;
+      console.log('fflate loaded with compression support');
+      updateSizeInfo();
+    } else {
+      console.log('fflate loaded but no gzipSync - size calc will estimate only');
+      fflateLoaded = false;
+      updateSizeInfo();
+    }
+  } catch(e) {
+    console.error('Failed to load fflate:', e);
+    fflateLoaded = false;
+    updateSizeInfo();
+  }
+}
+
+// Update template menu based on selected library.
+// Use addEventListener (not inline onclick) — top-level `const TEMPLATES` is in
+// the script's lexical scope, NOT on window, so inline onclick handlers can't
+// see it.
+function updateTemplateMenu() {
+  const lib = librarySelect.value;
+  const templates = TEMPLATES[lib] || [];
+  templateMenu.innerHTML = '';
+  templates.forEach((t) => {
+    const btn = document.createElement('button');
+    btn.textContent = t.name;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      loadTemplate(t);
+    });
+    templateMenu.appendChild(btn);
+  });
+}
+
+// Load a template
+function loadTemplate(template) {
+  editor.value = template.code;
+  templateMenu.classList.remove('show');
+  onEditorChange();
+}
+
+// Editor change handler
+function onEditorChange() {
+  clearTimeout(debounceTimer);
+  updateCharCount();
+  updateSizeInfo();
+
+  if(autoRunCheckbox.checked) {
+    debounceTimer = setTimeout(runPreview, 500);
+  }
+}
+
+// Update character count
+function updateCharCount() {
+  document.getElementById('charCount').textContent = editor.value.length + ' chars';
+}
+
+// Update size information
+function updateSizeInfo() {
+  const code = editor.value;
+  if(!code) {
+    document.getElementById('sizeOriginal').textContent = '0 B';
+    document.getElementById('sizeCompressed').textContent = '0 B';
+    document.getElementById('sizeFinal').textContent = '0 B';
+    document.getElementById('sizeBadge').textContent = '-';
+    document.getElementById('sizeBadge').className = 'size-badge';
+    document.getElementById('costEstimate').textContent = '-';
+    document.getElementById('costSats').textContent = '';
+    document.getElementById('vBytesInfo').textContent = '';
+    return;
+  }
+
+  try {
+    const original = new TextEncoder().encode(code).length;
+    let compressedLen;
+
+    if(fflateLoaded && fflateLib && typeof fflateLib.gzipSync === 'function') {
+      // Real compression
+      const codeBytes = new TextEncoder().encode(code);
+      const compressed = fflateLib.gzipSync(codeBytes, {level: 9});
+      compressedLen = compressed.length;
+    } else {
+      // Estimate: JS code typically compresses to ~30-40% of original
+      compressedLen = Math.ceil(original * 0.35);
+    }
+    // Base64 encoding adds ~33% overhead
+    const base64Len = Math.ceil(compressedLen * 1.37);
+    // v2 wrappers average ~1800 bytes (measured across all 11 lib paths after audit-4 fixes).
+    const templateOverhead = 1800;
+    const final = base64Len + templateOverhead;
+
+    document.getElementById('sizeOriginal').textContent = formatBytes(original);
+    document.getElementById('sizeCompressed').textContent = formatBytes(compressedLen) + (fflateLoaded ? '' : ' (est)');
+    document.getElementById('sizeFinal').textContent = formatBytes(final) + (fflateLoaded ? '' : ' (est)');
+
+    // Size badge
+    const badge = document.getElementById('sizeBadge');
+    if(final < 50000) {
+      badge.textContent = 'Excellent';
+      badge.className = 'size-badge good';
+    } else if(final < 100000) {
+      badge.textContent = 'Good';
+      badge.className = 'size-badge warn';
+    } else {
+      badge.textContent = 'Large';
+      badge.className = 'size-badge bad';
+    }
+
+    // Inscription cost (commit + reveal). Inscription content lives in the
+    // Taproot witness → 4× SegWit discount on those bytes.
+    //   commit tx:    ~150 vB   (P2WPKH input → P2TR output, "ord" wallet default)
+    //   reveal tx:    ~115 vB non-witness overhead
+    //                 + ceil((envelope + content) / 4) vB witness portion
+    //   envelope:     ~40 bytes (OP_FALSE OP_IF "ord" 1 "text/html" 0 …)
+    const feeRate = Math.max(1, parseInt(feeRateInput.value, 10) || 1);
+    const commitVBytes = 150;
+    const revealOverheadVBytes = 115;
+    const envelopeBytes = 40;
+    const witnessVBytes = Math.ceil((envelopeBytes + final) / 4);
+    const vBytes = commitVBytes + revealOverheadVBytes + witnessVBytes;
+    const sats = vBytes * feeRate;
+    document.getElementById('costEstimate').textContent = formatSats(sats);
+    document.getElementById('costSats').textContent = `(${sats.toLocaleString()} sats)`;
+    document.getElementById('vBytesInfo').textContent = `· ${vBytes.toLocaleString()} vB`;
+  } catch(e) {
+    console.error('Size calc error:', e);
+  }
+}
+
+// Format bytes
+function formatBytes(bytes) {
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+// Format sats
+function formatSats(sats) {
+  if(sats < 1000) return sats + ' sats';
+  if(sats < 1000000) return (sats / 1000).toFixed(1) + 'K sats';
+  return (sats / 1000000).toFixed(2) + 'M sats';
+}
+
+// Run preview
+function runPreview() {
+  hideError();
+  previewOverlay.style.display = 'none';
+
+  const code = editor.value;
+  const lib = librarySelect.value;
+  // Always go through buildPreviewHtml so every preview gets the same
+  // runtime treatment (fflate, fetch override for /content/, DOMParser-based injection).
+  const html = buildPreviewHtml(code, lib);
+
+  // Always use srcdoc - contentDocument.write blocked by sandbox
+  preview.srcdoc = html;
+}
+
+// Build-time helper: JSON-stringify but escape every < to <.
+// JS parses < back to < so the runtime user code is unchanged,
+// but the HTML parser sees no script-end tokens while tokenizing the
+// wrapper script element, so the wrapper script tag is never closed early.
+function _safeJson(s) {
+  return JSON.stringify(s).replace(/</g, '\\u003c');
+}
+
+// Build preview HTML (uses recursive inscription loading)
+// srcdoc has opaque origin, so we need full URLs
+function buildPreviewHtml(code, lib) {
+  // Use ordinals.com for local, current origin for on-chain
+  const fetchBase = isLocal ? 'https://ordinals.com' : location.origin;
+
+  // Shared runtime helper (string injected into iframe) that:
+  //  - rewrites bare /content/ fetch paths to https://ordinals.com/content/
+  //    (so `fetch('/content/abc...i0')` works in preview srcdoc, matching the
+  //    inscription environment where /content/ resolves to ordinals.com)
+  //  - parses a user HTML doc
+  //  - moves <head>/<body> children into place
+  //  - re-creates <script> elements with their attributes preserved (fixes type="module")
+  //  - runs them in document order
+  //
+  // _ocmInjectHtml is a `const` arrow function — at script top-level, const does NOT
+  // add to the global object, so user code calling `(0,eval)(...)` at global scope
+  // cannot collide with this name.
+  const RUNTIME_INJECTOR = `
+// Rewrite recursive Ordinals paths to ordinals.com so /content/X and /r/X work in preview.
+const _origFetch=fetch;
+const _isRecPath=(s)=>typeof s==='string'&&(s.startsWith('/content/')||s.startsWith('/r/'));
+window.fetch=(input,init)=>{
+  if(_isRecPath(input)) input='${fetchBase}'+input;
+  else if(input&&input.url&&_isRecPath(input.url)) input=new Request('${fetchBase}'+input.url,input);
+  return _origFetch(input,init);
+};
+// Polyfill DOMContentLoaded/load for late-injected scripts. _ocmInjectHtml runs
+// after the iframe has already loaded, so user scripts that register DOMContentLoaded
+// listeners would otherwise never fire. Schedule them on the next microtask.
+for(const tgt of [document,window]){
+  const _orig=tgt.addEventListener.bind(tgt);
+  tgt.addEventListener=(type,handler,opts)=>{
+    if((type==='DOMContentLoaded'||type==='load')&&typeof handler==='function')
+      Promise.resolve().then(()=>handler({type,target:tgt}));
+    else return _orig(type,handler,opts);
+  };
+}
+// Recursively transfer DOMParser-created nodes into the live document, recreating EVERY
+// <script> (top-level AND nested, e.g. inside <svg>) as a fresh element so it executes.
+// DOMParser sets the "already started" flag on scripts; only fresh document.createElement
+// scripts execute when appended.
+const _ocmInjectHtml=(htmlStr)=>{
+  const doc=new DOMParser().parseFromString(htmlStr,'text/html');
+  const transfer=(src,dst)=>{
+    if(src.nodeType===1 && src.tagName==='SCRIPT'){
+      const ns=document.createElement('script');
+      for(const a of src.attributes) ns.setAttribute(a.name,a.value);
+      ns.textContent=src.textContent;
+      dst.appendChild(ns);
+    } else {
+      const clone=src.cloneNode(false);
+      for(const child of Array.from(src.childNodes)) transfer(child,clone);
+      dst.appendChild(clone);
+    }
+  };
+  if(doc.head) for(const k of Array.from(doc.head.childNodes)) transfer(k,document.head);
+  if(doc.body) for(const k of Array.from(doc.body.childNodes)) transfer(k,document.body);
+};
+`;
+
+  if(lib === 'threejs') {
+    // Load Three.js from OCM Dimensions inscription, then run user code at top level.
+    // Backward compat: if user wrote function ocmCallback(){...}, call it after eval.
+    return `<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Security-Policy" content="default-src ${fetchBase}/content/ ${fetchBase}/r/ 'unsafe-eval' 'unsafe-inline' data: blob:"><base href="${fetchBase}/content/"><meta charset="utf-8"><style>body{margin:0;overflow:hidden}</style></head>
+<body><div id="scene"></div>
+<script>
+${RUNTIME_INJECTOR}
+(async function(){
+  const r=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  const html=await r.text();
+  const lines=html.split("\\n");
+  // Line 28 (0-idx): fflate library
+  (0,eval)(lines[28]);
+  // Line 32 (0-idx): const d3='...' — extract the THREE.js base64 payload
+  const d3Match=lines[32].match(/='([^']+)'/);
+  if(!d3Match)throw new Error('Could not extract Three.js base64');
+  const threeCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(d3Match[1])).map(c=>c.charCodeAt(0)))));
+  (0,eval)(threeCode);
+  (0,eval)(${_safeJson(code)});
+  if(typeof ocmCallback==='function')ocmCallback();
+})();
+<\/script></body></html>`;
+  } else if(lib === 'p5js') {
+    // Load p5 upfront. User code runs at top level. Backward compat:
+    //  - expose `d3` (raw p5 base64) as a global ONLY if user defined fflateCallback2
+    //    (avoids shadowing D3.js for users who want to combine D3 + p5)
+    //  - call fflateCallback2() if defined
+    return `<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Security-Policy" content="default-src ${fetchBase}/content/ ${fetchBase}/r/ 'unsafe-eval' 'unsafe-inline' data: blob:"><base href="${fetchBase}/content/"><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{display:block}</style></head>
+<body>
+<script>
+${RUNTIME_INJECTOR}
+(async function(){
+  const ocmR=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  const ocmHtml=await ocmR.text();
+  (0,eval)(ocmHtml.split("\\n")[28]); // fflate
+  const p5R=await fetch('${fetchBase}/content/${INSCRIPTIONS.p5js}');
+  const p5B64=await p5R.text();
+  const p5Code=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(p5B64)).map(c=>c.charCodeAt(0)))));
+  (0,eval)(p5Code);
+  (0,eval)(${_safeJson(code)});
+  if(typeof fflateCallback2==='function'){
+    window.d3=p5B64; // lazy backward compat — avoids D3.js collision
+    fflateCallback2();
+  }
+})();
+<\/script></body></html>`;
+  } else if(lib === 'matterjs') {
+    return `<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Security-Policy" content="default-src ${fetchBase}/content/ ${fetchBase}/r/ 'unsafe-eval' 'unsafe-inline' data: blob:"><base href="${fetchBase}/content/"><meta charset="utf-8"><style>body{margin:0;overflow:hidden}</style></head>
+<body>
+<script>
+${RUNTIME_INJECTOR}
+(async function(){
+  // Load fflate too (parity with inscription environment)
+  const ocmR=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  (0,eval)((await ocmR.text()).split("\\n")[28]);
+  const r=await fetch('${fetchBase}/content/${INSCRIPTIONS.matterjs}');
+  (0,eval)(await r.text());
+  (0,eval)(${_safeJson(code)});
+})();
+<\/script></body></html>`;
+  } else if(lib === 'webglFluid') {
+    // FIX: previously dropped user code entirely. Now we run it after the lib loads.
+    return `<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Security-Policy" content="default-src ${fetchBase}/content/ ${fetchBase}/r/ 'unsafe-eval' 'unsafe-inline' data: blob:"><base href="${fetchBase}/content/"><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head>
+<body>
+<canvas></canvas>
+<script>
+${RUNTIME_INJECTOR}
+(async function(){
+  const ocmR=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  (0,eval)((await ocmR.text()).split("\\n")[28]); // fflate (parity)
+  const r=await fetch('${fetchBase}/content/${INSCRIPTIONS.webglFluid}');
+  (0,eval)(await r.text());
+  (0,eval)(${_safeJson(code)});
+})();
+<\/script>
+</body></html>`;
+  } else if(lib === 'gsap' || lib === 'animejs' || lib === 'tonejs' || lib === 'lindenmayer' || lib === 'seedrandom' || lib === 'chroma') {
+    // Generic handler. Use DOMParser-based injector (RUNTIME_INJECTOR) so:
+    //  - <script type="module"> attributes survive
+    //  - <head> and <body> children land in the right place
+    //  - script execution order matches author intent
+    const inscriptionId = INSCRIPTIONS[lib];
+    const needsDecompress = lib === 'chroma';
+    const libLoad = needsDecompress
+      ? `const libR=await fetch('${fetchBase}/content/${inscriptionId}');
+  const libB64=await libR.text();
+  (0,eval)(fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(libB64)).map(c=>c.charCodeAt(0))))));`
+      : `const libR=await fetch('${fetchBase}/content/${inscriptionId}');
+  (0,eval)(await libR.text());`;
+    return `<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Security-Policy" content="default-src ${fetchBase}/content/ ${fetchBase}/r/ 'unsafe-eval' 'unsafe-inline' data: blob:"><base href="${fetchBase}/content/"><meta charset="utf-8"><style>body{margin:0}</style></head>
+<body>
+<script>
+${RUNTIME_INJECTOR}
+(async function(){
+  // fflate is loaded for every preview path so user code can use it (parity with inscription)
+  const ocmR=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  (0,eval)(((await ocmR.text())).split("\\n")[28]);
+  ${libLoad}
+  _ocmInjectHtml(${_safeJson(code)});
+})();
+<\/script>
+</body></html>`;
+  } else if(lib === 'html') {
+    // Mirror the inscription's html path: fflate + DOMParser-based injection.
+    return `<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Security-Policy" content="default-src ${fetchBase}/content/ ${fetchBase}/r/ 'unsafe-eval' 'unsafe-inline' data: blob:"><base href="${fetchBase}/content/"><meta charset="utf-8"><style>body{margin:0}</style></head>
+<body>
+<script>
+${RUNTIME_INJECTOR}
+(async function(){
+  const ocmR=await fetch('${fetchBase}/content/${INSCRIPTIONS.ocmDimensions}');
+  (0,eval)((await ocmR.text()).split("\\n")[28]);
+  _ocmInjectHtml(${_safeJson(code)});
+})();
+<\/script>
+</body></html>`;
+  }
+  return code;
+}
+
+// Build inscription HTML (uses recursive loading)
+function buildInscriptionHtml(code, lib) {
+  // Check if compression is available
+  if(!fflateLib || typeof fflateLib.gzipSync !== 'function') {
+    showError('Download requires compression (gzipSync) which is not available. Use the CLI tools to build inscriptions.');
+    return '';
+  }
+
+  const codeBytes = new TextEncoder().encode(code);
+  const compressed = fflateLib.gzipSync(codeBytes, {level: 9});
+  const base64 = btoa(String.fromCharCode(...compressed));
+
+  // Watermark — accurate for v2 (every path uses OCM Dimensions for fflate)
+  const watermark = '<!-- Built with OCM Dimensions Studio v2 (lib: '+INSCRIPTIONS.ocmDimensions+') -->';
+
+  // Shared runtime injector — preserves <script> attributes (e.g. type="module"),
+  // routes <head>/<body> children correctly, runs scripts in document order.
+  // Used by html and generic-lib paths so user-authored HTML actually behaves like HTML.
+  // const arrow at script top-level → NOT added to window, so user code can't shadow it.
+  const RUNTIME_INJECTOR = `
+for(const tgt of [document,window]){
+const _orig=tgt.addEventListener.bind(tgt);
+tgt.addEventListener=(type,handler,opts)=>{
+if((type==='DOMContentLoaded'||type==='load')&&typeof handler==='function')
+Promise.resolve().then(()=>handler({type,target:tgt}));
+else return _orig(type,handler,opts);
+};}
+const _ocmInjectHtml=(htmlStr)=>{
+const doc=new DOMParser().parseFromString(htmlStr,'text/html');
+const transfer=(src,dst)=>{
+if(src.nodeType===1&&src.tagName==='SCRIPT'){
+const ns=document.createElement('script');
+for(const a of src.attributes)ns.setAttribute(a.name,a.value);
+ns.textContent=src.textContent;
+dst.appendChild(ns);
+}else{
+const clone=src.cloneNode(false);
+for(const child of Array.from(src.childNodes))transfer(child,clone);
+dst.appendChild(clone);}};
+if(doc.head)for(const k of Array.from(doc.head.childNodes))transfer(k,document.head);
+if(doc.body)for(const k of Array.from(doc.body.childNodes))transfer(k,document.body);
+};`;
+
+  if(lib === 'threejs') {
+    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><div id="scene"></div><script>
+const _dbg=new URLSearchParams(location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
+let td='${base64}';
+(async function(){
+try{
+_log('Fetching OCM Dimensions...');
+const r=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
+if(!r.ok)throw new Error('Fetch failed: '+r.status);
+const hlL=(await r.text()).split("\\n");
+(0,eval)(hlL[28]); // fflate
+const d3Match=hlL[32].match(/='([^']+)'/);
+if(!d3Match)throw new Error('Could not extract Three.js');
+const threeCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(d3Match[1])).map(c=>c.charCodeAt(0)))));
+(0,eval)(threeCode);
+_log('Three.js loaded');
+const userCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
+(0,eval)(userCode);
+if(typeof ocmCallback==='function')ocmCallback(); // backward compat
+_log('User code loaded');
+}catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading. Check console.</pre>';}})();
+<\/script></body></html>`;
+  } else if(lib === 'p5js') {
+    // v2: load p5 BEFORE user code so user can write plain `new p5(...)`.
+    // Backward compat: window.d3 = p5 base64; call fflateCallback2() if defined.
+    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+const _dbg=new URLSearchParams(location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
+let td='${base64}';
+(async function(){
+try{
+_log('Fetching OCM Dimensions...');
+const r=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
+if(!r.ok)throw new Error('Fetch failed: '+r.status);
+(0,eval)((await r.text()).split("\\n")[28]); // fflate
+_log('Fetching p5.js...');
+const p5r=await fetch(\`/content/${INSCRIPTIONS.p5js}\`);
+if(!p5r.ok)throw new Error('p5.js fetch failed: '+p5r.status);
+const p5B64=await p5r.text();
+const p5Code=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(p5B64)).map(c=>c.charCodeAt(0)))));
+(0,eval)(p5Code);
+_log('p5.js loaded');
+const userCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
+(0,eval)(userCode);
+if(typeof fflateCallback2==='function'){
+window.d3=p5B64; // lazy backward compat — only set when an old-style wrapper needs it
+fflateCallback2();
+}
+_log('User code loaded');
+}catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading libraries. Check console.</pre>';}})();
+<\/script></body></html>`;
+  } else if(lib === 'matterjs') {
+    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+const _dbg=new URLSearchParams(location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
+let td='${base64}';
+(async function(){
+try{
+_log('Fetching Matter.js...');
+const r=await fetch(\`/content/${INSCRIPTIONS.matterjs}\`);
+if(!r.ok)throw new Error('Fetch failed: '+r.status);
+(0,eval)(await r.text());
+_log('Fetching fflate...');
+const fr=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
+(0,eval)((await fr.text()).split("\\n")[28]);
+const userCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
+(0,eval)(userCode);
+}catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading. Check console.</pre>';}})();
+<\/script></body></html>`;
+  } else if(lib === 'webglFluid') {
+    // FIX: previously dropped user code. Now compress+decompress+eval just like other libs.
+    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head><body>
+<canvas></canvas>
+<script>
+const _dbg=new URLSearchParams(location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
+let td='${base64}';
+(async function(){
+try{
+_log('Fetching WebGL Fluid...');
+const r=await fetch(\`/content/${INSCRIPTIONS.webglFluid}\`);
+if(!r.ok)throw new Error('Fetch failed: '+r.status);
+(0,eval)(await r.text());
+_log('Fetching fflate...');
+const fr=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
+(0,eval)((await fr.text()).split("\\n")[28]);
+const userCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
+(0,eval)(userCode);
+}catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading WebGL Fluid. Check console.</pre>';}})();
+<\/script></body></html>`;
+  } else if(lib === 'gsap' || lib === 'animejs' || lib === 'tonejs' || lib === 'lindenmayer' || lib === 'seedrandom' || lib === 'chroma') {
+    const inscriptionId = INSCRIPTIONS[lib];
+    const needsDecompress = lib === 'chroma';
+    const libLoadCode = needsDecompress
+      ? `const libB64=await r.text();(0,eval)(fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(libB64)).map(c=>c.charCodeAt(0))))));`
+      : `(0,eval)(await r.text());`;
+    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+const _dbg=new URLSearchParams(location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
+let td='${base64}';
+${RUNTIME_INJECTOR}
+(async function(){
+try{
+_log('Fetching fflate...');
+const fr=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
+(0,eval)((await fr.text()).split("\\n")[28]);
+_log('Fetching library...');
+const r=await fetch(\`/content/${inscriptionId}\`);
+if(!r.ok)throw new Error('Fetch failed: '+r.status);
+${libLoadCode}
+_log('Decompressing user HTML...');
+const userHtml=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
+_ocmInjectHtml(userHtml);
+}catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading. Check console.</pre>';}})();
+<\/script></body></html>`;
+  } else if(lib === 'html') {
+    // FIX: parse user HTML properly so <head>/<body>/<script attributes> are honored.
+    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+const _dbg=new URLSearchParams(location.search).has('debug');
+const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
+let td='${base64}';
+${RUNTIME_INJECTOR}
+(async function(){
+try{
+_log('Fetching fflate...');
+const r=await fetch(\`/content/${INSCRIPTIONS.ocmDimensions}\`);
+if(!r.ok)throw new Error('Fetch failed: '+r.status);
+(0,eval)((await r.text()).split("\\n")[28]);
+_log('Decompressing HTML...');
+const tt=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(td)).map(c=>c.charCodeAt(0)))));
+_ocmInjectHtml(tt);
+}catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading. Check console.</pre>';}})();
+<\/script></body></html>`;
+  }
+}
+
+// Download inscription-ready HTML
+function downloadInscription() {
+  const code = editor.value;
+  const lib = librarySelect.value;
+
+  if(!code.trim()) {
+    showError('Please write some code first!');
+    return;
+  }
+
+  // Check if compression is available
+  if(!fflateLib || typeof fflateLib.gzipSync !== 'function') {
+    // No compression - copy code and show instructions
+    navigator.clipboard.writeText(code).then(() => {
+      showError('Code copied! Compression not available on-chain. Use CLI: save code to file, then run: node tools/build-cli.js --workflow=' + lib);
+    }).catch(() => {
+      showError('Compression not available on-chain. Copy your code manually and use CLI: node tools/build-cli.js --workflow=' + lib);
+    });
+    return;
+  }
+
+  const html = buildInscriptionHtml(code, lib);
+  if(!html) return; // buildInscriptionHtml shows error
+
+  const blob = new Blob([html], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'inscription.html';
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// Show error
+function showError(msg) {
+  errorBanner.textContent = msg;
+  errorBanner.style.display = 'block';
+}
+
+// Hide error
+function hideError() {
+  errorBanner.style.display = 'none';
+}
+
+// Initialize on load
+init();
+</script>
+
+</body>
+</html>

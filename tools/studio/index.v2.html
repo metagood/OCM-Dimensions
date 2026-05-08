@@ -1236,6 +1236,10 @@ const _ocmInjectHtml=(htmlStr)=>{
       const ns=document.createElement('script');
       for(const a of src.attributes) ns.setAttribute(a.name,a.value);
       ns.textContent=src.textContent;
+      // async=false forces document-order execution for src-bearing scripts.
+      // DOM-inserted scripts are async-by-default, which would race a
+      // following inline script that depends on the loaded library.
+      if(ns.src) ns.async=false;
       dst.appendChild(ns);
     } else {
       const clone=src.cloneNode(false);
@@ -1408,6 +1412,7 @@ if(src.nodeType===1&&src.tagName==='SCRIPT'){
 const ns=document.createElement('script');
 for(const a of src.attributes)ns.setAttribute(a.name,a.value);
 ns.textContent=src.textContent;
+if(ns.src)ns.async=false;
 dst.appendChild(ns);
 }else{
 const clone=src.cloneNode(false);
@@ -1418,7 +1423,7 @@ if(doc.body)for(const k of Array.from(doc.body.childNodes))transfer(k,document.b
 };`;
 
   if(lib === 'threejs') {
-    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><div id="scene"></div><script>
+    return watermark + `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><div id="scene"></div><script>
 const _dbg=new URLSearchParams(location.search).has('debug');
 const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 let td='${base64}';
@@ -1443,7 +1448,7 @@ _log('User code loaded');
   } else if(lib === 'p5js') {
     // v2: load p5 BEFORE user code so user can write plain `new p5(...)`.
     // Backward compat: window.d3 = p5 base64; call fflateCallback2() if defined.
-    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+    return watermark + `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
 const _dbg=new URLSearchParams(location.search).has('debug');
 const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 let td='${base64}';
@@ -1470,7 +1475,7 @@ _log('User code loaded');
 }catch(e){console.error('[OCM] Failed:',e);document.body.innerHTML='<pre style="color:red;padding:20px">Error loading libraries. Check console.</pre>';}})();
 <\/script></body></html>`;
   } else if(lib === 'matterjs') {
-    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+    return watermark + `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
 const _dbg=new URLSearchParams(location.search).has('debug');
 const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 let td='${base64}';
@@ -1491,7 +1496,7 @@ const userCode=fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob
     // webglFluid user code is full HTML (canvas + script). Inject it first
     // so the canvas exists in the DOM, then load the fluid lib which
     // auto-attaches to the first canvas it finds.
-    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head><body><script>
+    return watermark + `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head><body><script>
 const _dbg=new URLSearchParams(location.search).has('debug');
 const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 let td='${base64}';
@@ -1516,7 +1521,7 @@ if(!r.ok)throw new Error('Fetch failed: '+r.status);
     const libLoadCode = needsDecompress
       ? `const libB64=await r.text();(0,eval)(fflate.strFromU8(fflate.gunzipSync(new Uint8Array(Array.from(atob(libB64)).map(c=>c.charCodeAt(0))))));`
       : `(0,eval)(await r.text());`;
-    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+    return watermark + `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
 const _dbg=new URLSearchParams(location.search).has('debug');
 const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 let td='${base64}';
@@ -1537,7 +1542,7 @@ _ocmInjectHtml(userHtml);
 <\/script></body></html>`;
   } else if(lib === 'html') {
     // FIX: parse user HTML properly so <head>/<body>/<script attributes> are honored.
-    return watermark + `<html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
+    return watermark + `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;}</style></head><body><script>
 const _dbg=new URLSearchParams(location.search).has('debug');
 const _log=(...a)=>{if(_dbg)console.log('[OCM]',...a);};
 let td='${base64}';
